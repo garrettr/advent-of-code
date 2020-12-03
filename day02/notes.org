@@ -1,0 +1,34 @@
+https://adventofcode.com/2020/day/2
+
+* Part One
+Each password policy specifies a range
+low - high
+and a letter
+
+3 6 s
+17 19 f
+8 11 c
+8 10 r
+1 2 p
+
+3-6 s: ssdsssss
+17-19 f: cnffsfffzhfnsffttms
+8-11 c: tzvtwncnwvwttp
+8-10 r: rwrrtrvttrrrr
+1-2 p: zhpjph
+
+C-u M-!: run shell command and insert output at point
+
+528
+
+* Part Two
+Traceback (most recent call last):
+  File "./password_philosophy_part2.py", line 57, in <module>
+    main()
+  File "./password_philosophy_part2.py", line 51, in main
+    results = [policy.valid(password) for policy, password in zip(policies, passwords)]
+  File "./password_philosophy_part2.py", line 51, in <listcomp>
+    results = [policy.valid(password) for policy, password in zip(policies, passwords)]
+  File "./password_philosophy_part2.py", line 26, in valid
+    pstr = password.password
+AttributeError: 'str' object has no attribute 'password'
