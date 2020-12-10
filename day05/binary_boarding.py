@@ -41,8 +41,16 @@ def main():
     with open('input.txt', 'r') as f:
         boarding_passes = [BoardingPass(line.strip()) for line in f.readlines()]
 
-    highest_seat_id = max([bp.seat_id for bp in boarding_passes])
+    seat_ids = [boarding_pass.seat_id for boarding_pass in boarding_passes]
+    highest_seat_id = max(seat_ids)
+
+    sorted_seat_ids = sorted(seat_ids)
+    for i, sid in enumerate(sorted_seat_ids[:-1]):
+        if sorted_seat_ids[i+1] != sid + 1:
+            missing_seat_id = sid + 1
+
     print(highest_seat_id)
+    print(missing_seat_id)
 
 
 if __name__ == '__main__':
