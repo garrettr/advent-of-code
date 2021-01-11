@@ -1,2 +1,5 @@
 https://adventofcode.com/2020/day/1
 
+* Swift
+
+[[https://monospacedmonologues.com/2019/01/running-swift-without-xcode/][running swift without xcode]]
