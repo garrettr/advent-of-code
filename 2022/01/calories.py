@@ -2,7 +2,7 @@
 
 def main():
     elves = []
-    
+
     # Each elf is represented by the sum of the calories they're carrying.
     elf = 0
 
@@ -14,8 +14,11 @@ def main():
             else:
                 elf += int(line.strip())
 
-    elves.sort()
-    print(elves[-1])
+    elves.sort(reverse=True)
+    # Part One
+    print(elves[0])
+    # Part Two
+    print(sum(elves[:3]))
 
 
 if __name__ == "__main__":
