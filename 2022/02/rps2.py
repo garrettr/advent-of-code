@@ -33,29 +33,22 @@ class Outcome(Enum):
             return cls.WIN
 
 
-def score_round(opponent, outcome):
+BEATEN_BY = {
+    Hand.ROCK: Hand.SCISSORS,
+    Hand.PAPER: Hand.ROCK,
+    Hand.SCISSORS: Hand.PAPER,
+}
+
+BEATS = {v: k for (k, v) in BEATEN_BY.items()}
+
+
+def score_round(opp_hand, outcome):
     if outcome is Outcome.DRAW:
-        hand = opponent
+        hand = opp_hand
     elif outcome is Outcome.WIN:
-        if opponent is Hand.ROCK:
-            hand = Hand.PAPER
-        elif opponent is Hand.PAPER:
-            hand = Hand.SCISSORS
-        elif opponent is Hand.SCISSORS:
-            hand = Hand.ROCK
-        else:
-            raise ValueError
+        hand = BEATS[opp_hand]
     elif outcome is Outcome.LOSE:
-        if opponent is Hand.ROCK:
-            hand = Hand.SCISSORS
-        elif opponent is Hand.PAPER:
-            hand = Hand.ROCK
-        elif opponent is Hand.SCISSORS:
-            hand = Hand.PAPER
-        else:
-            raise ValueError
-    else:
-        raise ValueError
+        hand = BEATEN_BY[opp_hand]
 
     return outcome.value + hand.value
 
