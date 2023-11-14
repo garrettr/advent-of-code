@@ -19,8 +19,8 @@ class Hand(Enum):
 
 
 class Outcome(Enum):
-    WIN = 1
-    LOSE = 2
+    WIN = 6
+    LOSE = 0
     DRAW = 3
 
     @classmethod
@@ -35,10 +35,8 @@ class Outcome(Enum):
 
 def score_round(opponent, outcome):
     if outcome is Outcome.DRAW:
-        score = 3
         hand = opponent
     elif outcome is Outcome.WIN:
-        score = 6
         if opponent is Hand.ROCK:
             hand = Hand.PAPER
         elif opponent is Hand.PAPER:
@@ -48,7 +46,6 @@ def score_round(opponent, outcome):
         else:
             raise ValueError
     elif outcome is Outcome.LOSE:
-        score = 0
         if opponent is Hand.ROCK:
             hand = Hand.SCISSORS
         elif opponent is Hand.PAPER:
@@ -60,7 +57,7 @@ def score_round(opponent, outcome):
     else:
         raise ValueError
 
-    return score + hand.value
+    return outcome.value + hand.value
 
 
 def main():
