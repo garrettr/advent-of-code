@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
+from collections import namedtuple
 import os
 import sys
+
+Move = namedtuple("Move", "count src dst")
+
+
+class Moves(list):
+    @classmethod
+    def from_str(cls, str):
+        lines = str.strip().split("\n")
+        moves = [
+            Move._make([int(s) for s in line.split() if s.isnumeric()])
+            for line in lines
+        ]
+        return cls(moves)
 
 
 class Crates:
@@ -22,27 +36,28 @@ class Crates:
 
         return cls(crates)
 
-    def rearrange(self, moves_desc):
-        moves = moves_desc.strip().split("\n")
-
+    def rearrange(self, moves, crane_model_no="9000"):
         for move in moves:
-            count, src, dst = [int(s) for s in move.split() if s.isnumeric()]
-            # print(count, src, dst)
-            for i in range(count):
-                self.crates[dst - 1].append(self.crates[src - 1].pop())
-                # print(self.crates)
+            for i in range(move.count):
+                if crane_model_no == "9000":
+                    self.crates[move.dst - 1].append(self.crates[move.src - 1].pop())
+                elif crane_model_no == "9001":
+                    self.crates[move.dst - 1].append(
+                        self.crates[move.src - 1].pop(-1 * (move.count - i))
+                    )
 
     @property
     def tops(self):
         return [stack[-1] for stack in self.crates]
 
 
-def part1(input_file):
-    crates_desc, moves_desc = input_file.read().split("\n\n")
-    crates = Crates.from_str(crates_desc)
-    # print(crates.crates)
-    crates.rearrange(moves_desc)
-    # print(crates.crates)
+def part1(crates, moves):
+    crates.rearrange(moves)
+    return "".join(crates.tops)
+
+
+def part2(crates, moves):
+    crates.rearrange(moves, crane_model_no="9001")
     return "".join(crates.tops)
 
 
@@ -53,4 +68,9 @@ if __name__ == "__main__":
         else os.path.join(os.path.dirname(__file__), "input.txt")
     )
     with open(input_path) as input_file:
-        print(part1(input_file))
+        crates_desc, moves_desc = input_file.read().split("\n\n")
+        moves = Moves.from_str(moves_desc)
+        crates = Crates.from_str(crates_desc)
+        print(part1(crates, moves))
+        crates = Crates.from_str(crates_desc)
+        print(part2(crates, moves))
