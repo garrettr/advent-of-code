@@ -4,12 +4,16 @@ import os
 import sys
 
 
-def part1(datastream):
-    last4 = deque(maxlen=4)
+def part1(datastream, marker_len=4):
+    sliding_window = deque(maxlen=marker_len)
     for i, c in enumerate(datastream):
-        last4.append(c)
-        if i > 2 and len(set(last4)) == 4:
+        sliding_window.append(c)
+        if i > 2 and len(set(sliding_window)) == marker_len:
             return i + 1
+
+
+def part2(datastream):
+    return part1(datastream, 14)
 
 
 if __name__ == "__main__":
@@ -22,3 +26,4 @@ if __name__ == "__main__":
         for line in input_file:
             datastream = line.strip()
             print(part1(datastream))
+            print(part2(datastream))
