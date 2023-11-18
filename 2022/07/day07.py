@@ -1,71 +1,107 @@
 #!/usr/bin/env python3
+from dataclasses import dataclass, field
 import os
 import sys
 
 
-def print_fs(fs, depth=0):
-    for name, node in fs.items():
-        indent = ' ' * depth * 2
-        if isinstance(node, dict):
-            print(f"{indent}- {name} (dir)")
-            print_fs(node, depth + 1)
-        else:
-            print(f"{indent}- {name} (file, size={node})")
+@dataclass
+class Dir:
+    name: str
+    size: int = 0
+    contents: dict = field(default_factory=dict)
 
 
-def size_dirs(sizes, node, name="/"):
-    if isinstance(node, dict):
-        size = sum([size_dirs(sizes, child, "/".join([name, child_name])) for child_name, child in node.items()])
-        sizes[name] = size
-        return size
-    else:
-        return node
+@dataclass
+class File:
+    name: str
+    size: int
 
 
-def part1(input_file):
-    # represent filesystem tree
-    # { name (dir or file) : { names (if dir) }, or size if file}
-    root = {"/": {}}
-    # stack representing history of directory traversal and current working directory
-    dirs = [root['/']]
+class Filesystem:
+    def __init__(self, root: Dir):
+        self.root = root
 
-    # parse terminal output
-    for line in input_file:
-        cwd = dirs[-1]
+    @classmethod
+    def from_file(cls, file):
+        root = Dir("/")
+        # stack representing history of directory traversal and current working directory
+        dirs = []
 
-        if line.startswith("$"):
-            _, cmd, *args = line.split()
-            if cmd == "cd":
-                dirname = args[0]
-                if dirname == "/":
-                    del dirs[1:]
-                elif dirname == "..":
-                    dirs.pop()
-                else:
-                    dirs.append(cwd[dirname])
-        else:
-            desc, name = line.split()
-            if desc == "dir":
-                cwd[name] = {}
+        # parse terminal output
+        for line in file:
+            cwd = dirs[-1] if len(dirs) else None
+
+            if line.startswith("$"):
+                _, cmd, *args = line.split()
+                if cmd == "cd":
+                    dirname = args[0]
+                    if dirname == "/":
+                        dirs.clear()
+                        dirs.append(root)
+                    elif dirname == "..":
+                        dirs.pop()
+                    else:
+                        dirs.append(cwd.contents[dirname])
             else:
-                cwd[name] = int(desc) # size
+                desc, name = line.split()
+                if desc == "dir":
+                    cwd.contents[name] = Dir(name)
+                else:
+                    cwd.contents[name] = File(name, int(desc))
 
-    #print_fs(root)
+        return cls(root)
 
-    # determine the total size of each directory
-    sizes = {}
-    size_dirs(sizes, root["/"])
+    def __str__(self):
+        lines = []
 
+        def dfs(node, depth=0):
+            indent = ' ' * depth * 2
+            if isinstance(node, Dir):
+                lines.append(f"{indent}- {node.name} (dir, size={node.size})")
+                for child in node.contents.values():
+                    dfs(child, depth + 1)
+            else:
+                lines.append(f"{indent}- {node.name} (file, size={node.size})")
+
+        dfs(self.root)
+        return '\n'.join(lines)
+
+    def calculate_dir_sizes(self):
+        def dfs(node):
+            if isinstance(node, Dir):
+                node.size = sum(dfs(child) for child in node.contents.values())
+            return node.size
+
+        return dfs(self.root)
+
+    def dir_sizes(self):
+        sizes = []
+
+        def dfs(node):
+            if isinstance(node, Dir):
+                sizes.append(node.size)
+                for child in node.contents.values():
+                    dfs(child)
+
+        dfs(self.root)
+        return sizes
+
+
+def part1(fs):
     # find directories with total size at most 100000
-    selected_dirs = {name: size for name, size in sizes.items() if size <= 100000}
-    return sum(selected_dirs.values())
+    sizes = [size for size in fs.dir_sizes() if size <= 100000]
+    return sum(sizes)
 
-    
+
 if __name__ == "__main__":
     input_path = (
         sys.argv[1]
         if len(sys.argv) > 1
         else os.path.join(os.path.dirname(__file__), "input.txt")
     )
+
     with open(input_path) as input_file:
-        print(part1(input_file))
+        fs = Filesystem.from_file(input_file)
+        fs.calculate_dir_sizes()
+
+        print(part1(fs))
