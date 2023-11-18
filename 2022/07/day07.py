@@ -20,6 +20,7 @@ class File:
 class Filesystem:
     def __init__(self, root: Dir):
         self.root = root
+        self.calculate_dir_sizes()
 
     @classmethod
     def from_file(cls, file):
@@ -88,9 +89,22 @@ class Filesystem:
 
 
 def part1(fs):
-    # find directories with total size at most 100000
-    sizes = [size for size in fs.dir_sizes() if size <= 100000]
-    return sum(sizes)
+    return sum([size for size in fs.dir_sizes() if size <= 100000])
+
+
+def part2(fs):
+    total = 70000000
+    unused_target = 30000000
+
+    used = fs.root.size
+    unused = total - used
+    must_delete_at_least = unused_target - unused
+
+    dir_sizes = fs.dir_sizes()
+    dir_sizes.sort()
+    for size in dir_sizes:
+        if size >= must_delete_at_least:
+            return size
 
 
 if __name__ == "__main__":
@@ -102,6 +116,5 @@ if __name__ == "__main__":
 
     with open(input_path) as input_file:
         fs = Filesystem.from_file(input_file)
-        fs.calculate_dir_sizes()
-
         print(part1(fs))
+        print(part2(fs))
