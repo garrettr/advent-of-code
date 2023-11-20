@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 from pprint import pprint
 
 
@@ -14,10 +15,14 @@ class Map:
         self.trees = trees
         self.rows = len(trees)
         self.cols = len(trees[0])
+
         self.visibilities = [
             [set() for _ in range(self.cols)] for _ in range(self.rows)
         ]
         self.compute_visibilities()
+
+        self.scenic_scores = [[0] * self.cols for _ in range(self.rows)]
+        self.compute_scenic_scores()
 
     @classmethod
     def from_string(cls, map):
@@ -57,6 +62,41 @@ class Map:
                 ):
                     self.visibilities[r][c].add("B")
 
+    def compute_scenic_scores(self):
+        for r in range(self.rows):
+            for c in range(self.cols):
+                tree = self.trees[r][c]
+
+                # Looking up
+                up = 0
+                for i in reversed(range(r)):
+                    up += 1
+                    if self.trees[i][c] >= tree:
+                        break
+
+                # Looking down
+                down = 0
+                for i in range(r + 1, self.rows):
+                    down += 1
+                    if self.trees[i][c] >= tree:
+                        break
+
+                # Looking left
+                left = 0
+                for i in reversed(range(c)):
+                    left += 1
+                    if self.trees[r][i] >= tree:
+                        break
+
+                # Looking right
+                right = 0
+                for i in range(c + 1, self.cols):
+                    right += 1
+                    if self.trees[r][i] >= tree:
+                        break
+
+                self.scenic_scores[r][c] = up * down * left * right
+
     @property
     def visible(self) -> int:
         return sum(1 for row in self.visibilities for tree in row if tree)
@@ -65,19 +105,24 @@ class Map:
     def invisible(self) -> int:
         return sum(1 for row in self.visibilities for tree in row if not tree)
 
+    @property
+    def highest_scenic_score(self) -> int:
+        return max(max(row) for row in self.scenic_scores)
+
 
 def test():
     m = Map.from_string(TEST)
     pprint(m.trees)
     pprint(m.visibilities)
     assert m.visible == 21
+    assert m.highest_scenic_score == 8
 
 
-def part1(s):
-    m = Map.from_string(s)
+input_path = os.path.join(os.path.dirname(__file__), "input.txt")
+with open(input_path) as f:
+    input = f.read().strip()
+    m = Map.from_string(input)
+    # Part 1
     print(m.visible)
-
-
-with open("input.txt") as f:
-    s = f.read().strip()
-    part1(s)
+    # Part 2
+    print(m.highest_scenic_score)
