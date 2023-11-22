@@ -6,46 +6,69 @@ addx 3
 addx -5"""
 
 
-def parse(string):
+def parse_instructions(string: str) -> list[list[str]]:
     return [line.split() for line in string.splitlines()]
 
 
-def execute(instructions):
-    X = 1
-    cycle = 1
-    signal_strengths = {}
-    ip = 0
+class CPU:
+    def __init__(self):
+        self.X = 1
+        self.cycle = 1
+        self.signal_strengths = {}
+        self.CRT = [[" "] * 40 for _ in range(6)]
 
-    for instruction in instructions:
-        op = instruction[0]
+    def update_signal_strengths(self):
+        if self.cycle % 40 == 20:
+            self.signal_strengths[self.cycle] = self.cycle * self.X
 
-        if op == "noop":
-            run_for = 1
-        elif op == "addx":
-            run_for = 2
+    def current_pixel(self):
+        return ((self.cycle - 1) % 40, (self.cycle - 1) // 40)
 
-        for i in range(run_for):
-            if cycle % 40 == 20:
-                signal_strengths[cycle] = cycle * X
-            cycle += 1
+    def update_CRT(self):
+        x, y = self.current_pixel()
+        self.CRT[y][x] = (
+            "#" if self.X in (x + offset for offset in range(-1, 2)) else "."
+        )
 
-        if op == "noop":
-            pass
-        elif op == "addx":
-            X += int(instruction[1])
+    def execute(self, instructions):
+        ip = 0
 
-    return signal_strengths
+        for instruction in instructions:
+            op = instruction[0]
+
+            if op == "noop":
+                run_for = 1
+            elif op == "addx":
+                run_for = 2
+
+            for i in range(run_for):
+                self.update_signal_strengths()
+                self.update_CRT()
+                self.cycle += 1
+
+            if op == "noop":
+                pass
+            elif op == "addx":
+                self.X += int(instruction[1])
+
+    def CRT_as_str(self):
+        return "\n".join("".join(row) for row in self.CRT)
 
 
 def part1(instructions):
-    signal_strengths = execute(instructions)
-    return sum(signal_strengths[i] for i in range(20, 220 + 1, 40))
+    cpu = CPU()
+    cpu.execute(instructions)
+    return sum(cpu.signal_strengths[i] for i in range(20, 220 + 1, 40))
 
 
-# instructions = parse(TINY_TEST)
-# input_filename = "test.txt"
-input_filename = "input.txt"
-input_path = os.path.join(os.path.dirname(__file__), input_filename)
+def part2(instructions):
+    cpu = CPU()
+    cpu.execute(instructions)
+    return cpu.CRT_as_str()
+
+
+input_path = os.path.join(os.path.dirname(__file__), "input.txt")
 with open(input_path) as f:
-    instructions = parse(f.read())
+    instructions = parse_instructions(f.read())
 print(part1(instructions))
+print(part2(instructions))
