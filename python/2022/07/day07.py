@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass, field
-import os
-import sys
+
+from advent import get_puzzle_input
 
 
 @dataclass
@@ -23,13 +23,13 @@ class Filesystem:
         self.calculate_dir_sizes()
 
     @classmethod
-    def from_file(cls, file):
+    def from_str(cls, s):
         root = Dir("/")
         # stack representing history of directory traversal and current working directory
         dirs = []
 
         # parse terminal output
-        for line in file:
+        for line in s.splitlines():
             cwd = dirs[-1] if len(dirs) else None
 
             if line.startswith("$"):
@@ -56,7 +56,7 @@ class Filesystem:
         lines = []
 
         def dfs(node, depth=0):
-            indent = ' ' * depth * 2
+            indent = " " * depth * 2
             if isinstance(node, Dir):
                 lines.append(f"{indent}- {node.name} (dir, size={node.size})")
                 for child in node.contents.values():
@@ -65,7 +65,7 @@ class Filesystem:
                 lines.append(f"{indent}- {node.name} (file, size={node.size})")
 
         dfs(self.root)
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def calculate_dir_sizes(self):
         def dfs(node):
@@ -107,14 +107,6 @@ def part2(fs):
             return size
 
 
-if __name__ == "__main__":
-    input_path = (
-        sys.argv[1]
-        if len(sys.argv) > 1
-        else os.path.join(os.path.dirname(__file__), "input.txt")
-    )
-
-    with open(input_path) as input_file:
-        fs = Filesystem.from_file(input_file)
-        print(part1(fs))
-        print(part2(fs))
+fs = Filesystem.from_str(get_puzzle_input(2022, 7))
+print(part1(fs))
+print(part2(fs))

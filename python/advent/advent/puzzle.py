@@ -25,3 +25,10 @@ def challenges_path(language: str) -> pathlib.Path:
 def challenge_path(language: str, year: int, day: int):
     """Return the path to the subdirectory containing the solution for a specific challenge."""
     return challenges_path(language) / str(year) / f"{day:02d}"
+
+
+def get_puzzle_input(year: int, day: int) -> str:
+    """Get the puzzle input for the given year and day."""
+    path = challenge_path("python", year, day)
+    with open(path / "input.txt") as f:
+        return f.read()

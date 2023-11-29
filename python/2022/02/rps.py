@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from enum import Enum
 
+from advent import get_puzzle_input
+
 
 class Hand(Enum):
     ROCK = 1
@@ -33,12 +35,9 @@ def score_round(opp, you):
 
 def main():
     total_score = 0
-
-    with open("input.txt") as f:
-        for line in f:
-            opp, you = [Hand.from_str(c) for c in line.strip().split()]
-            total_score += score_round(opp, you)
-
+    for line in get_puzzle_input(2022, 2).splitlines():
+        opp, you = [Hand.from_str(c) for c in line.strip().split()]
+        total_score += score_round(opp, you)
     print(total_score)
 
 

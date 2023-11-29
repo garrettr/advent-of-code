@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os
+from advent import get_puzzle_input
 
 TINY_TEST = """noop
 addx 3
@@ -67,8 +67,6 @@ def part2(instructions):
     return cpu.CRT_as_str()
 
 
-input_path = os.path.join(os.path.dirname(__file__), "input.txt")
-with open(input_path) as f:
-    instructions = parse_instructions(f.read())
+instructions = parse_instructions(get_puzzle_input(2022, 10))
 print(part1(instructions))
 print(part2(instructions))

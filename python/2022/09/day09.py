@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import os
+from advent import get_puzzle_input
+
 
 TEST = """R 4
 U 4
@@ -170,8 +171,6 @@ def part2(input):
 # part2(TEST)
 # part2(TEST2)
 
-input_path = os.path.join(os.path.dirname(__file__), "input.txt")
-with open(input_path) as f:
-    input = f.read().strip()
-    part1(input)
-    part2(input)
+input = get_puzzle_input(2022, 9)
+part1(input)
+part2(input)

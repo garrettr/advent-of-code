@@ -3,6 +3,8 @@ from collections import namedtuple
 import os
 import sys
 
+from advent import get_puzzle_input
+
 Move = namedtuple("Move", "count src dst")
 
 
@@ -61,16 +63,23 @@ def part2(crates, moves):
     return "".join(crates.tops)
 
 
-if __name__ == "__main__":
-    input_path = (
-        sys.argv[1]
-        if len(sys.argv) > 1
-        else os.path.join(os.path.dirname(__file__), "input.txt")
-    )
-    with open(input_path) as input_file:
-        crates_desc, moves_desc = input_file.read().split("\n\n")
-        moves = Moves.from_str(moves_desc)
-        crates = Crates.from_str(crates_desc)
-        print(part1(crates, moves))
-        crates = Crates.from_str(crates_desc)
-        print(part2(crates, moves))
+# if __name__ == "__main__":
+#     input_path = (
+#         sys.argv[1]
+#         if len(sys.argv) > 1
+#         else os.path.join(os.path.dirname(__file__), "input.txt")
+#     )
+#     with open(input_path) as input_file:
+#         crates_desc, moves_desc = input_file.read().split("\n\n")
+#         moves = Moves.from_str(moves_desc)
+#         crates = Crates.from_str(crates_desc)
+#         print(part1(crates, moves))
+#         crates = Crates.from_str(crates_desc)
+#         print(part2(crates, moves))
+
+crates_desc, moves_desc = get_puzzle_input(2022, 5).split("\n\n")
+moves = Moves.from_str(moves_desc)
+crates = Crates.from_str(crates_desc)
+print(part1(crates, moves))
+crates = Crates.from_str(crates_desc)
+print(part2(crates, moves))

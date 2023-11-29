@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import os
 from pprint import pprint
+
+from advent import get_puzzle_input
 
 
 TEST = """30373
@@ -118,11 +119,8 @@ def test():
     assert m.highest_scenic_score == 8
 
 
-input_path = os.path.join(os.path.dirname(__file__), "input.txt")
-with open(input_path) as f:
-    input = f.read().strip()
-    m = Map.from_string(input)
-    # Part 1
-    print(m.visible)
-    # Part 2
-    print(m.highest_scenic_score)
+m = Map.from_string(get_puzzle_input(2022, 8))
+# Part 1
+print(m.visible)
+# Part 2
+print(m.highest_scenic_score)

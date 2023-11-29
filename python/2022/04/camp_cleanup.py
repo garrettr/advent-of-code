@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from advent import get_puzzle_input
 
 
 def fully_contained(pair):
@@ -13,9 +14,9 @@ def overlapping(pair):
     return smaller[0] in larger_range or smaller[1] in larger_range
 
 
-def parse(file):
+def parse(string):
     pairs = []
-    for line in file:
+    for line in string.splitlines():
         pair = []
         assignments = line.strip().split(",")
         for assignment in assignments:
@@ -33,8 +34,6 @@ def part2(pairs):
     return sum([overlapping(pair) for pair in pairs])
 
 
-if __name__ == "__main__":
-    with open("input.txt") as file:
-        pairs = parse(file)
-    print(part1(pairs))
-    print(part2(pairs))
+pairs = parse(get_puzzle_input(2022, 4))
+print(part1(pairs))
+print(part2(pairs))
