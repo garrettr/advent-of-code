@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 import argparse
 import sys
+from datetime import date
 
 from .puzzle import challenges_path, challenge_path
 from .website import download_puzzle_input
+
+
+def get_current_puzzle() -> (int, int):
+    """Get the year and day of the most recently published Advent of Code puzzle."""
+    today = date.today()
+    year = today.year - (0 if today.month == 12 else 1)
+    day = min(today.day, 25) if today.month == 12 else 25
+    return (year, day)
 
 
 def do_language_specific_setup(language: str, year: int, day: int, path):
@@ -47,9 +56,20 @@ def main():
     )
 
     new_cmd = subparsers.add_parser("new", help="Prepare for a new day's challenge")
-    new_cmd.add_argument("language", choices=["python"], help="Language to use")
-    new_cmd.add_argument("year", type=int, help="Year of the day to create")
-    new_cmd.add_argument("day", type=int, help="Day to create")
+    new_cmd.add_argument(
+        "language",
+        choices=["python"],
+        nargs="?",
+        default="python",
+        help="Language to use",
+    )
+    (year, day) = get_current_puzzle()
+    new_cmd.add_argument(
+        "year", type=int, nargs="?", default=year, help="Year the puzzle was published"
+    )
+    new_cmd.add_argument(
+        "day", type=int, nargs="?", default=day, help="Day the puzzle was published"
+    )
 
     args = parser.parse_args()
 
@@ -66,4 +86,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
