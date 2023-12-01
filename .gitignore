@@ -8,3 +8,6 @@ venv/
 # Emacs
 *~
 \#*\#
+
+# .env
+.env
