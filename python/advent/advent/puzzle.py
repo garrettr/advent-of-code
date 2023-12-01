@@ -27,8 +27,8 @@ def challenge_path(language: str, year: int, day: int):
     return challenges_path(language) / str(year) / f"{day:02d}"
 
 
-def get_puzzle_input(year: int, day: int) -> str:
+def get_puzzle_input(year: int, day: int, filename="input.txt") -> str:
     """Get the puzzle input for the given year and day."""
     path = challenge_path("python", year, day)
-    with open(path / "input.txt") as f:
+    with open(path / filename) as f:
         return f.read()
