@@ -1,62 +1,40 @@
 from advent import get_puzzle_input
 
 
+def calibration_value(line: str) -> int:
+    digits = [c for c in line if c.isdigit()]
+    return int(digits[0] + digits[-1])
+
+
 def part1(input):
-    ns = []
-    for line in input.splitlines():
-        ds = [c for c in line if c.isdigit()]
-        ns.append(int(ds[0] + ds[-1]))
-    return sum(ns)
+    return sum(calibration_value(line) for line in input.splitlines())
+
+
+def calibration_value2(line: str) -> int:
+    SPELLED_DIGITS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+    DIGITS = SPELLED_DIGITS + [str(i+1) for i in range(len(SPELLED_DIGITS))]
+
+    first = last = None
+    for i in range(len(line)):
+        if first and last:
+            break
+
+        for digit in DIGITS:
+            if not first and line[i:].startswith(digit):
+                first = digit
+            if not last and line[len(line) - i - 1:].startswith(digit):
+                last = digit
+
+    def digit_value(digit):
+        if digit in SPELLED_DIGITS:
+            return SPELLED_DIGITS.index(digit) + 1
+        return int(digit)
+
+    return 10 * digit_value(first) + digit_value(last)
 
 
 def part2(input):
-    DIGITS = {
-        "one": 1,
-        "two": 2,
-        "three": 3,
-        "four": 4,
-        "five": 5,
-        "six": 6,
-        "seven": 7,
-        "eight": 8,
-        "nine": 9,
-    }
-
-    digits = list(DIGITS.keys()) + [str(v) for v in DIGITS.values()]
-    ns = []
-    for line in input.splitlines():
-        ds = []
-
-        for i in range(len(line)):
-            found = False
-            for digit in digits:
-                if line[i:].startswith(digit):
-                    found = True
-                    ds.append(digit)
-                    break
-            if found:
-                break
-
-        for i in range(len(line) - 1, -1, -1):
-            found = False
-            for digit in digits:
-                if line[i:].startswith(digit):
-                    found = True
-                    ds.append(digit)
-                    break
-            if found:
-                break
-
-        norm_ds = []
-        for d in ds:
-            if d in DIGITS:
-                norm_ds.append(str(DIGITS[d]))
-            else:
-                norm_ds.append(d)
-
-        ns.append(int("".join(norm_ds)))
-
-    return sum(ns)
+    return sum(calibration_value2(line) for line in input.splitlines())
 
 
 if __name__ == "__main__":
