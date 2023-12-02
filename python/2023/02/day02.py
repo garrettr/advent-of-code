@@ -1,5 +1,8 @@
-from advent import get_puzzle_input
+from functools import reduce
+from operator import mul
 from pprint import pprint
+
+from advent import get_puzzle_input
 
 
 def parse(input: str):
@@ -33,7 +36,8 @@ def part1(input: str):
 
 
 def part2(input: str):
-    pass
+    games = parse(input)
+    return sum([reduce(mul, game.values()) for game in games])
 
 
 if __name__ == "__main__":
@@ -41,4 +45,4 @@ if __name__ == "__main__":
     input = get_puzzle_input(2023, 2)
 
     print(part1(input))
-    # print(part2(input))
+    print(part2(input))
