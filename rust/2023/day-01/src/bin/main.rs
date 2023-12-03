@@ -5,18 +5,18 @@ fn main() {
     dbg!(part2(input));
 }
 
-fn map_and_sum<F>(input: &str, f: F) -> i32
+fn map_and_sum<F>(input: &str, f: F) -> u32
 where
-    F: Fn(&str) -> i32,
+    F: Fn(&str) -> u32,
 {
     input.lines().map(f).sum()
 }
 
-fn calibration_value(line: &str) -> i32 {
+fn calibration_value(line: &str) -> u32 {
     let digits = line
         .chars()
-        .filter_map(|c| c.to_digit(10).map(|n| n as i32))
-        .collect::<Vec<i32>>();
+        .filter_map(|c| c.to_digit(10))
+        .collect::<Vec<_>>();
     return 10 * digits.first().unwrap() + digits.last().unwrap();
 }
 
@@ -29,7 +29,7 @@ const SPELLED_DIGITS: [&str; 9] = [
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 
-fn calibration_value2(line: &str) -> i32 {
+fn calibration_value2(line: &str) -> u32 {
     let digits = [DIGITS_AS_STRS, SPELLED_DIGITS].concat();
 
     let mut first = 0;
@@ -40,7 +40,7 @@ fn calibration_value2(line: &str) -> i32 {
         }
 
         for (j, digit) in digits.iter().enumerate() {
-            let digit_as_int = if j < 9 { j as i32 + 1 } else { j as i32 - 8 };
+            let digit_as_int = if j < 9 { j as u32 + 1 } else { j as u32 - 8 };
             if first == 0 && line[i..].starts_with(digit) {
                 first = digit_as_int;
             }
