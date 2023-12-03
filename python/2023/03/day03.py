@@ -45,12 +45,28 @@ def part1(input: str):
     return sum(parts)
 
 
+def parse_engine_schematic2(input: str):
+    parts = []
+    for row, line in enumerate(input.splitlines()):
+        for col, char in enumerate(line):
+            if char != "." and not char.isdigit():
+                parts.append((char, find_surrounding_parts(input, row, col)))
+    return parts
+
+
+def gear_ratios(parts):
+    return [
+        gears[0] * gears[1] for part, gears in parts if part == "*" and len(gears) == 2
+    ]
+
+
 def part2(input: str):
-    pass
+    parts = parse_engine_schematic2(input)
+    return sum(gear_ratios(parts))
 
 
 if __name__ == "__main__":
     example = get_puzzle_input(2023, 3, "example.txt")
     input = get_puzzle_input(2023, 3)
-
     print(part1(input))
+    print(part2(input))

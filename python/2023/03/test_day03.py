@@ -15,6 +15,5 @@ class TestDay02(unittest.TestCase):
         self.assertEqual(part1(self.input), 530849)
 
     def test_part2(self):
-        pass
-        # self.assertEqual(part2(self.example), 2286)
-        # self.assertEqual(part2(self.input), 71274)
+        self.assertEqual(part2(self.example), 467835)
+        self.assertEqual(part2(self.input), 84900879)
