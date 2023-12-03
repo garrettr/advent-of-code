@@ -5,6 +5,13 @@ fn main() {
     dbg!(part2(input));
 }
 
+fn map_and_sum<F>(input: &str, f: F) -> i32
+where
+    F: Fn(&str) -> i32,
+{
+    input.lines().map(f).sum()
+}
+
 fn calibration_value(line: &str) -> i32 {
     let digits = line
         .chars()
@@ -14,11 +21,7 @@ fn calibration_value(line: &str) -> i32 {
 }
 
 fn part1(input: &str) -> String {
-    input
-        .lines()
-        .map(calibration_value)
-        .sum::<i32>()
-        .to_string()
+    map_and_sum(input, calibration_value).to_string()
 }
 
 const DIGITS_AS_STRS: [&str; 9] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -51,11 +54,7 @@ fn calibration_value2(line: &str) -> i32 {
 }
 
 fn part2(input: &str) -> String {
-    input
-        .lines()
-        .map(calibration_value2)
-        .sum::<i32>()
-        .to_string()
+    map_and_sum(input, calibration_value2).to_string()
 }
 
 #[cfg(test)]
