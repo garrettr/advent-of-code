@@ -5,6 +5,7 @@ const INPUT: &str = include_str!("input.txt");
 
 fn main() {
     dbg!(part1(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[derive(Debug)]
@@ -52,11 +53,17 @@ fn game_is_possible(game: &Game, red: u32, green: u32, blue: u32) -> bool {
 }
 
 fn part1(input: &str) -> u32 {
-    let games = parse_games(input);
-    games
+    parse_games(input)
         .iter()
         .filter(|game| game_is_possible(game, 12, 13, 14))
         .map(|game| game.id)
+        .sum()
+}
+
+fn part2(input: &str) -> u32 {
+    parse_games(input)
+        .iter()
+        .map(|game| game.red * game.green * game.blue)
         .sum()
 }
 
@@ -72,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), "281");
-        // assert_eq!(part2(INPUT), "54418");
+        assert_eq!(part2(EXAMPLE), 2286);
+        assert_eq!(part2(INPUT), 71274);
     }
 }
