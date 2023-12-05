@@ -6,20 +6,25 @@ from advent import get_puzzle_input
 
 @dataclass
 class ScratchCard:
+    id: int
     winning_numbers: set[int]
     numbers_you_have: set[int]
 
     @classmethod
     def from_str(cls, s: str):
+        id = int(s.split(":")[0].split()[1])
         number_lists = s.split(":")[1].strip().split("|")
         numbers = [
             {int(n) for n in number_list.split()} for number_list in number_lists
         ]
-        return cls(*numbers)
+        return cls(id, *numbers)
+
+    def matches(self) -> int:
+        return len(self.winning_numbers & self.numbers_you_have)
 
     def score(self) -> int:
-        intersection = self.winning_numbers & self.numbers_you_have
-        return 2 ** (len(intersection) - 1) if intersection else 0
+        matches = self.matches()
+        return 2 ** (matches - 1) if matches else 0
 
 
 def parse_cards(input: str) -> list[ScratchCard]:
@@ -31,11 +36,14 @@ def part1(input: str):
 
 
 def part2(input: str):
-    pass
+    cards = parse_cards(input)
+    for card in cards:
+        cards.extend(cards[card.id : card.id + card.matches()])
+    return len(cards)
 
 
 if __name__ == "__main__":
     example = get_puzzle_input(2023, 4, "example.txt")
     input = get_puzzle_input(2023, 4)
     print(part1(input))
-    # print(part2(input))
+    print(part2(input))
