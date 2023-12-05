@@ -5,7 +5,7 @@ from advent import get_puzzle_input
 from day03 import part1, part2
 
 
-class TestDay02(unittest.TestCase):
+class TestDay03(unittest.TestCase):
     def setUp(self):
         self.example = get_puzzle_input(2023, 3, "example.txt")
         self.input = get_puzzle_input(2023, 3)
