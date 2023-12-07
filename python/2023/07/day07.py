@@ -37,13 +37,23 @@ class Type(enum.Enum):
 class Hand:
     hand: str
     bid: int
+    jokers_wild: bool = False
 
     CARD_LABELS = "23456789TJQKA"
+    CARD_LABELS_JOKERS_WILD = "J" + CARD_LABELS.replace("J", "")
 
     @property
     def type(self) -> Type:
         assert len(self.hand) == 5
         counter = Counter(self.hand)
+
+        if self.jokers_wild and (num_jokers := counter["J"]) > 0:
+            del counter["J"]
+            if num_jokers == 5:
+                counter["A"] = num_jokers
+            else:
+                counter[counter.most_common(1)[0][0]] += num_jokers
+
         counts = set(counter.values())
         match len(counter):
             case 1:
@@ -74,11 +84,14 @@ class Hand:
             if self.type != other.type:
                 return self.type < other.type
             else:
+                labels = (
+                    self.CARD_LABELS_JOKERS_WILD
+                    if self.jokers_wild
+                    else self.CARD_LABELS
+                )
                 for self_card, other_card in zip(self.hand, other.hand):
                     if self_card != other_card:
-                        return self.CARD_LABELS.index(
-                            self_card
-                        ) < self.CARD_LABELS.index(other_card)
+                        return labels.index(self_card) < labels.index(other_card)
 
         return NotImplemented
 
@@ -93,18 +106,26 @@ class Game:
             [
                 Hand(hand, int(bid))
                 for hand, bid in (line.split() for line in s.splitlines())
-            ]
+            ],
         )
+
+    def sort_hands_by_strength(self, jokers_wild: bool = False):
+        # Gross hack to communicate game metavar to `Hand.type`.
+        for hand in self.hands:
+            hand.jokers_wild = jokers_wild
+        self.hands.sort()
 
 
 def part1(input: str):
     game = Game.from_str(input)
-    hands = sorted(game.hands)
-    return sum(hand.bid * (i + 1) for i, hand in enumerate(hands))
+    game.sort_hands_by_strength()
+    return sum(hand.bid * (i + 1) for i, hand in enumerate(game.hands))
 
 
 def part2(input: str):
-    pass
+    game = Game.from_str(input)
+    game.sort_hands_by_strength(jokers_wild=True)
+    return sum(hand.bid * (i + 1) for i, hand in enumerate(game.hands))
 
 
 class TestDay(unittest.TestCase):
@@ -116,9 +137,9 @@ class TestDay(unittest.TestCase):
         self.assertEqual(part1(self.example), 6440)
         self.assertEqual(part1(self.input), 247815719)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 5905)
+        self.assertEqual(part2(self.input), 248747492)
 
 
 if __name__ == "__main__":
