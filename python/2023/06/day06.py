@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from functools import reduce
 from operator import mul
 from pprint import pprint
+import math
 import unittest
 
 from advent import get_puzzle_input
@@ -34,6 +35,19 @@ def number_of_ways_to_beat(race: Race) -> int:
     )
 
 
+def quadratic_formula(a, b, c):
+    "ax^2 + bx + c"
+    return tuple(
+        (-b + (sign * math.sqrt(b**2 - 4 * a * c))) / 2 * a for sign in (1, -1)
+    )
+
+
+def number_of_ways_to_beat2(race: Race) -> int:
+    "Just solve the quadratic"
+    lo, hi = quadratic_formula(-1, race.duration, -race.record_distance)
+    return int(hi) - int(lo)
+
+
 def part1(input: str) -> int:
     races = parse(input)
     return reduce(mul, (number_of_ways_to_beat(race) for race in races))
@@ -49,7 +63,7 @@ def parse2(input: str) -> Race:
 
 def part2(input: str):
     race = parse2(input)
-    return number_of_ways_to_beat(race)
+    return number_of_ways_to_beat2(race)
 
 
 class TestDay(unittest.TestCase):
