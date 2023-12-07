@@ -14,8 +14,7 @@
     ```sh
     $ python -c "import advent" && echo "OK"
     OK
-    $ advent
-    Hello from advent __main__.py
+    $ advent -h
     ```
 
 # Authenticating to the Advent of Code website
