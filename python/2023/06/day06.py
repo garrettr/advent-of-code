@@ -39,8 +39,17 @@ def part1(input: str) -> int:
     return reduce(mul, (number_of_ways_to_beat(race) for race in races))
 
 
+def parse2(input: str) -> Race:
+    time, distance = [
+        int("".join(line.split(":")[1].strip().split()))
+        for line in input.strip().splitlines()
+    ]
+    return Race(time, distance)
+
+
 def part2(input: str):
-    pass
+    race = parse2(input)
+    return number_of_ways_to_beat(race)
 
 
 class TestDay(unittest.TestCase):
@@ -52,9 +61,9 @@ class TestDay(unittest.TestCase):
         self.assertEqual(part1(self.example), 288)
         self.assertEqual(part1(self.input), 781200)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 71503)
+        self.assertEqual(part2(self.input), 49240091)
 
 
 if __name__ == "__main__":
