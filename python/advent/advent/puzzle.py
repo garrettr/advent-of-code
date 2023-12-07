@@ -24,7 +24,11 @@ def challenges_path(language: str) -> pathlib.Path:
 
 def challenge_path(language: str, year: int, day: int):
     """Return the path to the subdirectory containing the solution for a specific challenge."""
-    return challenges_path(language) / str(year) / f"{day:02d}"
+    if language == "rust":
+        day_dir = f"day-{day:02d}"
+    else:
+        day_dir = f"{day:02d}"
+    return challenges_path(language) / str(year) / day_dir
 
 
 def get_puzzle_input(year: int, day: int, filename="input.txt") -> str:

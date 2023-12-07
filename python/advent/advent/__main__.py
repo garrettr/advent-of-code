@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import shutil
+import subprocess
 import sys
 from datetime import date
 
@@ -18,8 +20,36 @@ def get_current_puzzle() -> (int, int):
 def do_language_specific_setup(language: str, year: int, day: int, path):
     match language:
         case "python":
-            # TODO: Copy template .py
-            pass
+            # Create challenge directory.
+            path.mkdir(parents=True)
+
+            # Copy template file, substituting the current year and day.
+            with open(challenges_path(language) / "template.py") as f:
+                template = f.read()
+            template = template.replace("YEAR = 2023", f"YEAR = {year}")
+            template = template.replace("DAY = 1", f"DAY = {day}")
+            solution_src = path / f"day{day:02d}.py"
+            with open(solution_src, "w") as f:
+                f.write(template)
+            solution_src.chmod(0o755)
+
+        case "rust":
+            # Create challenge directory and boilerplate binary package with Cargo.
+            try:
+                subprocess.run(
+                    ["cargo", "new", path.name],
+                    capture_output=True,
+                    check=True,
+                    cwd=path.parent,
+                )
+            except subprocess.CalledProcessError as e:
+                print(e.stderr.decode("utf-8"))
+                raise
+
+            # Copy template file.
+            shutil.copyfile(
+                challenges_path(language) / "template.rs", path / "src" / "main.rs"
+            )
 
 
 def new(language: str, year: int, day: int):
@@ -39,13 +69,13 @@ def new(language: str, year: int, day: int):
             path.rmdir()
         else:
             return
-    path.mkdir(parents=True)
-
-    puzzle_input = download_puzzle_input(year, day)
-    with open(path / "input.txt", "w") as f:
-        f.write(puzzle_input)
 
     do_language_specific_setup(language, year, day, path)
+
+    puzzle_input = download_puzzle_input(year, day)
+    input_dir = path / "src" if language == "rust" else path
+    with open(input_dir / "input.txt", "w") as f:
+        f.write(puzzle_input)
 
 
 def main():
@@ -58,7 +88,7 @@ def main():
     new_cmd = subparsers.add_parser("new", help="Prepare for a new day's challenge")
     new_cmd.add_argument(
         "language",
-        choices=["python"],
+        choices=["python", "rust"],
         nargs="?",
         default="python",
         help="Language to use",
