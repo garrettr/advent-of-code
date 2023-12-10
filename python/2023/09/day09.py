@@ -25,12 +25,24 @@ def next_in_seq(seq: list[int]):
     return diff_seqs[0][-1]
 
 
+def prev_in_seq(seq: list[int]):
+    diff_seqs = [seq]
+    while not all(n == 0 for n in diff_seqs[-1]):
+        diff_seqs.append([y - x for x, y in pairwise(diff_seqs[-1])])
+
+    diff_seqs[-1].insert(0, 0)
+    for curr, prev in pairwise(reversed(diff_seqs)):
+        prev.insert(0, prev[0] - curr[0])
+
+    return diff_seqs[0][0]
+
+
 def part1(input: str):
     return sum(next_in_seq(seq) for seq in parse(input))
 
 
 def part2(input: str):
-    pass
+    return sum(prev_in_seq(seq) for seq in parse(input))
 
 
 class TestDay(unittest.TestCase):
@@ -42,9 +54,9 @@ class TestDay(unittest.TestCase):
         self.assertEqual(part1(self.example), 114)
         self.assertEqual(part1(self.input), 1789635132)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 2)
+        self.assertEqual(part2(self.input), 913)
 
 
 if __name__ == "__main__":
