@@ -5,8 +5,8 @@ const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
 
 fn main() {
-    dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    dbg!(part1(INPUT, None));
+    dbg!(part2(INPUT));
 }
 
 fn find_rows_to_expand(universe: &Vec<&str>) -> HashSet<usize> {
@@ -55,12 +55,13 @@ fn find_galaxies(universe: &Vec<&str>) -> Vec<(usize, usize)> {
     galaxies
 }
 
-fn part1(input: &str) -> u64 {
+fn part1(input: &str, expansion_factor: Option<u64>) -> u64 {
+    let expansion_factor = expansion_factor.unwrap_or(2);
+
     let universe = input.lines().collect::<Vec<_>>();
     let rows_to_expand = find_rows_to_expand(&universe);
     let cols_to_expand = find_cols_to_expand(&universe);
     let galaxies = find_galaxies(&universe);
-    let expansion_factor = 2;
 
     let mut sum = 0;
     for i in 0..galaxies.len() {
@@ -94,7 +95,9 @@ fn part1(input: &str) -> u64 {
     sum
 }
 
-fn part2(input: &str) -> () {}
+fn part2(input: &str) -> u64 {
+    part1(input, Some(1_000_000))
+}
 
 #[cfg(test)]
 mod tests {
@@ -102,13 +105,12 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(EXAMPLE), 374);
-        assert_eq!(part1(INPUT), 10313550);
+        assert_eq!(part1(EXAMPLE, None), 374);
+        assert_eq!(part1(INPUT, None), 10313550);
     }
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), ()));
-        // assert_eq!(part2(INPUT), ()));
+        assert_eq!(part2(INPUT), 611998089572);
     }
 }
