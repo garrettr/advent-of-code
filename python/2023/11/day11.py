@@ -8,7 +8,7 @@ YEAR = 2023
 DAY = 11
 
 
-def part1(input: str):
+def part1(input: str, expansion_factor=2):
     def find_empty_space(lines) -> set[int]:
         return {i for i, line in enumerate(lines) if all(c == "." for c in line)}
 
@@ -23,23 +23,17 @@ def part1(input: str):
         if col == "#"
     ]
 
-    shortest_path_lens = []
+    sum_shortest_path_lens = 0
     for g1, g2 in itertools.combinations(galaxies, 2):
         shortest_path_len = 0
         for r in range(*sorted((g1[0], g2[0]))):
-            if r in rows_to_expand:
-                shortest_path_len += 2
-            else:
-                shortest_path_len += 1
+            shortest_path_len += expansion_factor if r in rows_to_expand else 1
         for c in range(*sorted((g1[1], g2[1]))):
-            if c in cols_to_expand:
-                shortest_path_len += 2
-            else:
-                shortest_path_len += 1
+            shortest_path_len += expansion_factor if c in cols_to_expand else 1
         # print(f"{g1} -> {g2}: {shortest_path_len}")
-        shortest_path_lens.append(shortest_path_len)
+        sum_shortest_path_lens += shortest_path_len
 
-    return sum(shortest_path_lens)
+    return sum_shortest_path_lens
 
     # The following functional-style code is correct on the example input,
     # but much slower on `input.txt` than the above imperative-style code.
@@ -58,7 +52,7 @@ def part1(input: str):
 
 
 def part2(input: str):
-    pass
+    return part1(input, expansion_factor=1_000_000)
 
 
 class TestDay(unittest.TestCase):
@@ -70,9 +64,8 @@ class TestDay(unittest.TestCase):
         self.assertEqual(part1(self.example), 374)
         self.assertEqual(part1(self.input), 10313550)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.input), 611998089572)
 
 
 if __name__ == "__main__":
