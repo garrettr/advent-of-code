@@ -4,7 +4,7 @@
  * 167-175.
  *
  * Build and run:
- * clang backtrack.c -o backtrack && ./backtrack
+ * clang subsets.c -o subsets && ./subsets
  */
 
 #include <stdbool.h>
