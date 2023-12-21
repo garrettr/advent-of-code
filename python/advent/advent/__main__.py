@@ -28,6 +28,7 @@ def do_language_specific_setup(language: str, year: int, day: int, path):
                 template = f.read()
             template = template.replace("YEAR = 2023", f"YEAR = {year}")
             template = template.replace("DAY = 1", f"DAY = {day}")
+            template = template.replace("TestDay", f"TestDay{day}")
             solution_src = path / f"day{day:02d}.py"
             with open(solution_src, "w") as f:
                 f.write(template)
