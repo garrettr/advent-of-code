@@ -11,12 +11,12 @@ EXAMPLE = "rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"
 
 
 def hash(s: str) -> int:
-    value = 0
+    result = 0
     for c in s:
-        value += ord(c)
-        value *= 17
-        value = value % 256
-    return value
+        result += ord(c)
+        result *= 17
+        result = result % 256
+    return result
 
 
 def part1(input: str) -> int:
@@ -34,17 +34,16 @@ def print_boxes(boxes):
         )
 
 
-def initialization_sequence(input: str, verbose=False):
+def initialization_sequence(input: str, verbose=False) -> dict[int, dict[str, int]]:
     steps = input.replace("\n", "").split(",")
-    boxes = defaultdict(dict)
+    boxes: dict[int, dict[str, int]] = defaultdict(dict)
 
     for step in steps:
         label, operation, focal_length = re.match(STEP_RE, step).groups()
         box = hash(label)
         match operation:
             case "-":
-                if label in boxes[box]:
-                    del boxes[box][label]
+                boxes[box].pop(label, None)
             case "=":
                 boxes[box][label] = int(focal_length)
 
