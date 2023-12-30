@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 from dataclasses import dataclass
 from pprint import pprint
+import unittest
 
 from advent import get_puzzle_input
 
@@ -69,8 +71,19 @@ def part2(input: str):
     pass
 
 
+class TestDay05(unittest.TestCase):
+    def setUp(self):
+        self.example = get_puzzle_input(2023, 5, "example.txt")
+        self.input = get_puzzle_input(2023, 5)
+
+    def test_part1(self):
+        self.assertEqual(part1(self.example), 35)
+        self.assertEqual(part1(self.input), 323142486)
+
+    # def test_part2(self):
+    #     self.assertEqual(part2(self.example), 30)
+    #     self.assertEqual(part2(self.input), 9881058)
+
+
 if __name__ == "__main__":
-    example = get_puzzle_input(2023, 5, "example.txt")
-    input = get_puzzle_input(2023, 5)
-    print(part1(input))
-    # print(part2(input))
+    unittest.main()
