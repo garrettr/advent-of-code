@@ -17,26 +17,21 @@ def part1(input: str):
     # When the platform is tilted north, all rounded rocks (O) will fall to the beginning of their section.
     total_load = 0
     for col in cols:
-        sections = []
         section_start = 0
         num_rounded_rocks = 0
         for i, c in enumerate(col):
             if c == "O":
                 num_rounded_rocks += 1
-            elif c == "#":
-                sections.append((section_start, num_rounded_rocks))
+            if c == "#" or i == len(col) - 1:
+                total_load += sum(
+                    range(
+                        len(col) - section_start,
+                        len(col) - section_start - num_rounded_rocks,
+                        -1,
+                    )
+                )
                 section_start = i + 1
                 num_rounded_rocks = 0
-        sections.append((section_start, num_rounded_rocks))
-
-        for start_index, num_rounded_rocks in sections:
-            total_load += sum(
-                range(
-                    len(col) - start_index,
-                    len(col) - start_index - num_rounded_rocks,
-                    -1,
-                )
-            )
 
     return total_load
 
