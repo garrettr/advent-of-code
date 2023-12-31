@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
 from itertools import pairwise
-from typing import Literal
 import unittest
 
 from advent import get_puzzle_input
@@ -10,7 +9,7 @@ YEAR = 2023
 DAY = 18
 
 LatticePoint = tuple[int, int]
-Direction = Literal["U", "D", "L", "R"]
+Direction = str
 
 DIRECTION_OFFSETS: dict[Direction, LatticePoint] = {
     "U": (-1, 0),
@@ -55,7 +54,7 @@ def parse(input: str) -> Plan:
 
 
 def boundary_points(plan: Plan) -> list[LatticePoint]:
-    points = [(0, 0)]
+    points: list[LatticePoint] = [(0, 0)]
     for step in plan:
         points.append(step.starting_from(points[-1]))
     return points
