@@ -67,7 +67,7 @@ def new(language: str, year: int, day: int):
     if path.exists():
         res = input(f"Challenge directory {path} already exists, replace it? (y/n) ")
         if res.lower() == "y":
-            path.rmdir()
+            shutil.rmtree(path)
         else:
             return
 
