@@ -36,7 +36,6 @@ def multiply_point_by_scalar(point: LatticePoint, scalar: int) -> LatticePoint:
 class Step:
     direction: Direction
     distance: int
-    color: str
 
     def starting_from(self, start: LatticePoint) -> LatticePoint:
         return add_points(
@@ -50,10 +49,8 @@ Plan = list[Step]
 
 def parse(input: str) -> Plan:
     return [
-        Step(direction, int(distance), color.strip("()#"))
-        for direction, distance, color in (
-            line.split(" ") for line in input.splitlines()
-        )
+        Step(direction, int(distance))
+        for direction, distance, _ in (line.split(" ") for line in input.splitlines())
     ]
 
 
@@ -93,8 +90,18 @@ def part1(input: str):
     return area(outline)
 
 
+def parse2(input: str):
+    def parse_line(line: str):
+        hex_code = line.split(" ")[2].strip("()#")
+        distance = int(hex_code[:5], 16)
+        direction = "RDLU"[int(hex_code[5], 16)]
+        return direction, distance
+
+    return [Step(*parse_line(line)) for line in input.splitlines()]
+
+
 def part2(input: str):
-    pass
+    return area(boundary_points(parse2(input)))
 
 
 class TestDay18(unittest.TestCase):
@@ -106,11 +113,10 @@ class TestDay18(unittest.TestCase):
         self.assertEqual(part1(self.example), 62)
         self.assertEqual(part1(self.input), 48400)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 952408144115)
+        self.assertEqual(part2(self.input), 72811019847283)
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    print(part1(get_puzzle_input(YEAR, DAY)))
+    unittest.main()
