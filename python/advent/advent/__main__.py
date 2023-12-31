@@ -9,12 +9,12 @@ from .puzzle import challenges_path, challenge_path
 from .website import download_puzzle_input
 
 
-def get_current_puzzle() -> (int, int):
+def get_current_puzzle() -> tuple[int, int]:
     """Get the year and day of the most recently published Advent of Code puzzle."""
     today = date.today()
     year = today.year - (0 if today.month == 12 else 1)
     day = min(today.day, 25) if today.month == 12 else 25
-    return (year, day)
+    return year, day
 
 
 def do_language_specific_setup(language: str, year: int, day: int, path):
