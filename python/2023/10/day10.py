@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from enum import Enum
+from itertools import pairwise
 from pprint import pprint
 import unittest
 
@@ -121,14 +122,35 @@ def part1(input: str):
     return int(len(find_loop(grid, start)) / 2)
 
 
+def enclosed_area(loop: list[GridPoint]) -> int:
+    # Copy the loop and append the start point to the end for the shoelace formula.
+    boundary = loop + [loop[0]]
+
+    # Compute the area with the shoelace formula
+    area = abs(sum((x1 * y2) - (x2 * y1) for (x1, y1), (x2, y2) in pairwise(boundary)) // 2)
+
+    # Compute the number of interior points with Pick's theorem:
+    # A = i + b / 2 - 1, where
+    # A = area of polygon
+    # i = number of interior points
+    # b = number of boundary points
+    return area - ((len(boundary) - 1) // 2) + 1
+
+
 def part2(input: str):
-    pass
+    grid = parse_grid(input.splitlines())
+    start = find_start(grid)
+    loop = find_loop(grid, start)
+    return enclosed_area(loop)
 
 
 class TestDay10(unittest.TestCase):
     def setUp(self):
         self.example = get_puzzle_input(YEAR, DAY, "example.txt")
         self.example2 = get_puzzle_input(YEAR, DAY, "example2.txt")
+        self.example3 = get_puzzle_input(YEAR, DAY, "example3.txt")
+        self.example4 = get_puzzle_input(YEAR, DAY, "example4.txt")
+        self.example5 = get_puzzle_input(YEAR, DAY, "example5.txt")
         self.input = get_puzzle_input(YEAR, DAY)
 
     def test_part1(self):
@@ -136,9 +158,11 @@ class TestDay10(unittest.TestCase):
         self.assertEqual(part1(self.example2), 8)
         self.assertEqual(part1(self.input), 6931)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example3), 4)
+        self.assertEqual(part2(self.example4), 8)
+        self.assertEqual(part2(self.example5), 10)
+        self.assertEqual(part2(self.input), 357)
 
 
 if __name__ == "__main__":
