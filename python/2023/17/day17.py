@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 from heapq import heappop, heappush
-from typing import Literal, TypeVarTuple
+from typing import Literal
 import unittest
 
 from advent import get_puzzle_input
@@ -89,7 +89,7 @@ class Position:
 State = tuple[int, Position, int]
 
 
-def part1(input: str) -> int:
+def _solve(input: str, min_steps: int, max_steps: int) -> int:
     raw_grid = input.splitlines()
 
     # Bottom-right corner of the grid.
@@ -106,41 +106,53 @@ def part1(input: str) -> int:
     while queue:
         cost, pos, num_steps = heappop(queue)
 
-        if pos.loc == target:
+        if pos.loc == target and num_steps >= min_steps:
             return cost
 
         if (pos, num_steps) in seen:
             continue
         seen.add((pos, num_steps))
 
-        if (left := pos.rotate_and_step("CCW")).loc in grid:
+        if (
+            num_steps >= min_steps
+            and (left := pos.rotate_and_step("CCW")).loc in grid
+        ):
             heappush(queue, (cost + grid[left.loc], left, 1))
 
-        if (right := pos.rotate_and_step("CW")).loc in grid:
+        if (
+            num_steps >= min_steps
+            and (right := pos.rotate_and_step("CW")).loc in grid
+        ):
             heappush(queue, (cost + grid[right.loc], right, 1))
 
-        if num_steps < 3 and (forward := pos.step()).loc in grid:
+        if num_steps < max_steps and (forward := pos.step()).loc in grid:
             heappush(queue, (cost + grid[forward.loc], forward, num_steps + 1))
 
     return -1
 
 
+def part1(input: str) -> int:
+    return _solve(input, 0, 3)
+
+
 def part2(input: str):
-    pass
+    return _solve(input, 4, 10)
 
 
 class TestDay17(unittest.TestCase):
     def setUp(self):
         self.example = get_puzzle_input(YEAR, DAY, "example.txt")
+        self.example2 = get_puzzle_input(YEAR, DAY, "example2.txt")
         self.input = get_puzzle_input(YEAR, DAY)
 
     def test_part1(self):
         self.assertEqual(part1(self.example), 102)
         self.assertEqual(part1(self.input), 1263)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 94)
+        self.assertEqual(part2(self.example2), 71)
+        self.assertEqual(part2(self.input), 1411)
 
 
 if __name__ == "__main__":
