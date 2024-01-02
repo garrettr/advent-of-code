@@ -1,5 +1,6 @@
 use {once_cell::sync::Lazy, regex::Regex, std::collections::HashMap};
 
+#[allow(dead_code)]
 const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
 
@@ -38,7 +39,7 @@ fn parse_games(input: &str) -> Vec<Game> {
         }
 
         games.push(Game {
-            id: id,
+            id,
             red: colors["red"],
             green: colors["green"],
             blue: colors["blue"],
