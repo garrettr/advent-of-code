@@ -1,11 +1,12 @@
-use std::collections::HashSet;
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 
 const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
 
 fn main() {
-    dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    // dbg!(part1(INPUT));
+    dbg!(part2(INPUT));
 }
 
 type Grid = Vec<Vec<char>>;
@@ -30,10 +31,9 @@ struct Number {
     value: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
 struct Part {
     loc: Point,
-    #[allow(dead_code)]
     value: char,
 }
 
@@ -93,7 +93,7 @@ impl Schematic {
                 for number in self.numbers.iter() {
                     if row == number.loc.row as i32
                         && col >= number.loc.col as i32
-                        && col <= (number.loc.col + number.len - 1) as i32
+                        && col < (number.loc.col + number.len) as i32
                     {
                         adjacent_numbers.insert(number.clone());
                     }
@@ -104,13 +104,12 @@ impl Schematic {
     }
 }
 
-fn find_part_numbers(schematic: Schematic) -> HashSet<Number> {
-    let mut part_numbers = HashSet::new();
+fn find_part_numbers(schematic: Schematic) -> HashMap<Part, HashSet<Number>> {
+    let mut part_numbers = HashMap::new();
     for part in schematic.parts.iter() {
         let adjacent_numbers = schematic.find_adjacent_numbers(part);
-        part_numbers.extend(adjacent_numbers.into_iter());
+        part_numbers.insert(part.clone(), adjacent_numbers);
     }
-    dbg!(&part_numbers);
     part_numbers
 }
 
@@ -119,12 +118,33 @@ fn part1(input: &str) -> i32 {
     let schematic = parse_schematic(grid);
     let part_numbers = find_part_numbers(schematic);
     part_numbers
+        .values()
+        .into_iter()
+        .fold(HashSet::new(), |acc, hashset| {
+            acc.union(&hashset).cloned().collect()
+        })
         .iter()
         .map(|part_number| part_number.value)
         .sum()
 }
 
-fn part2(input: &str) -> () {}
+fn part2(input: &str) -> i32 {
+    let grid = parse_grid(input);
+    let schematic = parse_schematic(grid);
+    let part_numbers = find_part_numbers(schematic);
+    part_numbers
+        .iter()
+        //.inspect(|&pn| println!("Debug: {:?}", pn))
+        .filter_map(|(part, numbers)| {
+            if part.value == '*' && numbers.len() == 2 {
+                //println!("Debug: {:?} => {:?}", part, numbers);
+                Some(numbers.iter().fold(1, |acc, number| acc * number.value))
+            } else {
+                None
+            }
+        })
+        .sum()
+}
 
 #[cfg(test)]
 mod tests {
@@ -138,7 +158,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), ()));
-        // assert_eq!(part2(INPUT), ()));
+        assert_eq!(part2(EXAMPLE), 467835);
+        assert_eq!(part2(INPUT), 84900879);
     }
 }
