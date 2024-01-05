@@ -1,8 +1,13 @@
+#!/usr/bin/env python3
 from functools import reduce
 from operator import mul
 from pprint import pprint
+import unittest
 
 from advent import get_puzzle_input
+
+YEAR = 2023
+DAY = 2
 
 
 def parse(input: str):
@@ -21,10 +26,7 @@ def parse(input: str):
 
 
 def is_game_possible(game, totals):
-    for color, n in game.items():
-        if color not in totals or totals[color] < n:
-            return False
-    return True
+    return all(color in totals and totals[color] >= n for color, n in game.items())
 
 
 def part1(input: str):
@@ -40,9 +42,19 @@ def part2(input: str):
     return sum([reduce(mul, game.values()) for game in games])
 
 
-if __name__ == "__main__":
-    example = get_puzzle_input(2023, 2, "example.txt")
-    input = get_puzzle_input(2023, 2)
+class TestDay02(unittest.TestCase):
+    def setUp(self):
+        self.example = get_puzzle_input(YEAR, DAY, "example.txt")
+        self.input = get_puzzle_input(YEAR, DAY)
 
-    print(part1(input))
-    print(part2(input))
+    def test_part1(self):
+        self.assertEqual(part1(self.example), 8)
+        self.assertEqual(part1(self.input), 2149)
+
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 2286)
+        self.assertEqual(part2(self.input), 71274)
+
+        
+if __name__ == "__main__":
+    unittest.main()

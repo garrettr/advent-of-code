@@ -12,15 +12,12 @@ def distance(l: str, r: str) -> int:
 
 
 def reflection_row(block: list[str], distance_to_match: int) -> int:
-    for idx in range(len(block)):
-        if idx == 0:
-            continue
-
+    for i in range(1, len(block)):
         if (
-            sum(distance(l, r) for l, r in zip(reversed(block[:idx]), block[idx:]))
+            sum(distance(l, r) for l, r in zip(reversed(block[:i]), block[i:]))
             == distance_to_match
         ):
-            return idx
+            return i
 
     return 0
 

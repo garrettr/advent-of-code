@@ -2,7 +2,8 @@
 from collections import Counter
 from dataclasses import dataclass
 import enum
-import functools
+from functools import total_ordering
+from operator import methodcaller
 from pprint import pprint
 import unittest
 
@@ -12,7 +13,7 @@ YEAR = 2023
 DAY = 7
 
 
-@functools.total_ordering
+@total_ordering
 class Type(enum.Enum):
     HIGH_CARD = 1
     ONE_PAIR = 2
@@ -27,27 +28,20 @@ class Type(enum.Enum):
             return self.value < other.value
         return NotImplemented
 
-    def __eq__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value == other.value
-        return NotImplemented
-
 
 @dataclass
 class Hand:
     hand: str
     bid: int
-    jokers_wild: bool = False
 
     CARD_LABELS = "23456789TJQKA"
     CARD_LABELS_JOKERS_WILD = "J" + CARD_LABELS.replace("J", "")
 
-    @property
-    def type(self) -> Type:
+    def type(self, jokers_wild: bool = False) -> Type:
         assert len(self.hand) == 5
-        counter = Counter(self.hand)
 
-        if self.jokers_wild and (num_jokers := counter["J"]) > 0:
+        counter = Counter(self.hand)
+        if jokers_wild and (num_jokers := counter["J"]) > 0:
             del counter["J"]
             if num_jokers == 5:
                 counter["A"] = num_jokers
@@ -79,53 +73,30 @@ class Hand:
             case _:
                 raise ValueError(f"Failed to determine type of hand: {self.hand}")
 
-    def __lt__(self, other):
-        if self.__class__ is other.__class__:
-            if self.type != other.type:
-                return self.type < other.type
-            else:
-                labels = (
-                    self.CARD_LABELS_JOKERS_WILD
-                    if self.jokers_wild
-                    else self.CARD_LABELS
-                )
-                for self_card, other_card in zip(self.hand, other.hand):
-                    if self_card != other_card:
-                        return labels.index(self_card) < labels.index(other_card)
-
-        return NotImplemented
-
-
-@dataclass
-class Game:
-    hands: list[Hand]
-
-    @classmethod
-    def from_str(cls, s: str):
-        return cls(
-            [
-                Hand(hand, int(bid))
-                for hand, bid in (line.split() for line in s.splitlines())
-            ],
+    def sort_key(self, jokers_wild: bool = False):
+        card_labels = self.CARD_LABELS_JOKERS_WILD if jokers_wild else self.CARD_LABELS
+        return (
+            self.type(jokers_wild),
+            *[card_labels.index(card) for card in self.hand],
         )
 
-    def sort_hands_by_strength(self, jokers_wild: bool = False):
-        # Gross hack to communicate game metavar to `Hand.type`.
-        for hand in self.hands:
-            hand.jokers_wild = jokers_wild
-        self.hands.sort()
+
+def parse_hands(s: str) -> list[Hand]:
+    return [
+        Hand(hand, int(bid)) for hand, bid in (line.split() for line in s.splitlines())
+    ]
 
 
 def part1(input: str):
-    game = Game.from_str(input)
-    game.sort_hands_by_strength()
-    return sum(hand.bid * (i + 1) for i, hand in enumerate(game.hands))
+    hands = parse_hands(input)
+    hands.sort(key=methodcaller('sort_key'))
+    return sum(hand.bid * (i + 1) for i, hand in enumerate(hands))
 
 
 def part2(input: str):
-    game = Game.from_str(input)
-    game.sort_hands_by_strength(jokers_wild=True)
-    return sum(hand.bid * (i + 1) for i, hand in enumerate(game.hands))
+    hands = parse_hands(input)
+    hands.sort(key=lambda hand: hand.sort_key(jokers_wild=True))
+    return sum(hand.bid * (i + 1) for i, hand in enumerate(hands))
 
 
 class TestDay(unittest.TestCase):

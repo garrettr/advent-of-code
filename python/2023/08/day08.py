@@ -19,18 +19,14 @@ class Map:
 
     def navigate(self, start="AAA", end="ZZZ") -> int:
         current = start
-        steps = 0
-        for instruction in itertools.cycle(self.instructions):
+        for step, instruction in enumerate(itertools.cycle(self.instructions)):
             current = self.nodes[current][instruction]
-            steps += 1
             if current.endswith(end):
-                return steps
+                return step + 1
 
     def navigate2(self):
-        start_nodes, end_nodes = [
-            [key for key in self.nodes.keys() if key.endswith(c)] for c in ("A", "Z")
-        ]
-        path_lens = [self.navigate(start, "Z") for start in start_nodes]
+        start_nodes = (key for key in self.nodes.keys() if key.endswith("A"))
+        path_lens = (self.navigate(start, "Z") for start in start_nodes)
         return math.lcm(*path_lens)
 
 

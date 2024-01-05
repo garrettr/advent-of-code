@@ -1,4 +1,10 @@
+#!/usr/bin/env python3
+import unittest
+
 from advent import get_puzzle_input
+
+YEAR = 2023
+DAY = 1
 
 
 def calibration_value(line: str) -> int:
@@ -37,10 +43,20 @@ def part2(input):
     return sum(calibration_value2(line) for line in input.splitlines())
 
 
-if __name__ == "__main__":
-    example = get_puzzle_input(2023, 1, "example.txt")
-    example2 = get_puzzle_input(2023, 1, "example2.txt")
-    input = get_puzzle_input(2023, 1)
+class TestDay01(unittest.TestCase):
+    def setUp(self):
+        self.example = get_puzzle_input(2023, 1, "example.txt")
+        self.example2 = get_puzzle_input(2023, 1, "example2.txt")
+        self.input = get_puzzle_input(2023, 1)
 
-    print(part1(input))
-    print(part2(input))
+    def test_part1(self):
+        self.assertEqual(part1(self.example), 142)
+        self.assertEqual(part1(self.input), 54304)
+
+    def test_part2(self):
+        self.assertEqual(part2(self.example2), 281)
+        self.assertEqual(part2(self.input), 54418)
+
+
+if __name__ == "__main__":
+    unittest.main()
