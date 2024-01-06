@@ -7,14 +7,14 @@ const INPUT: &str = include_str!("input.txt");
 
 #[derive(Debug, PartialEq, Eq)]
 struct Card {
-    winning_numbers: HashSet<i32>,
-    numbers: Vec<i32>,
+    winning_numbers: HashSet<u32>,
+    numbers: HashSet<u32>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 struct ParseCardError;
 
-fn parse_ints(s: &str) -> Result<Vec<i32>, ParseIntError> {
+fn parse_ints(s: &str) -> Result<Vec<u32>, ParseIntError> {
     s.trim().split_whitespace().map(|s| s.parse()).collect()
 }
 
@@ -30,7 +30,10 @@ impl FromStr for Card {
             .map_err(|_| ParseCardError)?
             .into_iter()
             .collect();
-        let numbers = parse_ints(sections[2]).map_err(|_| ParseCardError)?;
+        let numbers = parse_ints(sections[2])
+            .map_err(|_| ParseCardError)?
+            .into_iter()
+            .collect();
         Ok(Card {
             winning_numbers,
             numbers,
@@ -43,34 +46,25 @@ fn parse_cards(s: &str) -> Vec<Card> {
 }
 
 impl Card {
-    fn num_matching(&self) -> i32 {
-        self.numbers
-            .iter()
-            .map(|n| {
-                if self.winning_numbers.contains(n) {
-                    1
-                } else {
-                    0
-                }
-            })
-            .sum()
+    fn num_matching(&self) -> u32 {
+        (&self.winning_numbers & &self.numbers).len() as u32
     }
 
-    fn points(&self) -> i32 {
+    fn points(&self) -> u32 {
         let num_matching = self.num_matching();
         if num_matching == 0 {
             0
         } else {
-            i32::pow(2, num_matching as u32 - 1)
+            u32::pow(2, num_matching as u32 - 1)
         }
     }
 }
 
-fn part1(input: &str) -> i32 {
+fn part1(input: &str) -> u32 {
     parse_cards(input).iter().map(|card| card.points()).sum()
 }
 
-fn part2(input: &str) -> i32 {
+fn part2(input: &str) -> u32 {
     let cards = parse_cards(input);
     let mut copies_per_card = vec![1; cards.len()];
     for (i, card) in cards.iter().enumerate() {
@@ -127,7 +121,7 @@ mod tests {
     fn test_card_fromstr() {
         let expected = Ok(Card {
             winning_numbers: HashSet::from([41, 48, 83, 86, 17]),
-            numbers: Vec::from([83, 86, 6, 31, 17, 9, 48, 53]),
+            numbers: HashSet::from([83, 86, 6, 31, 17, 9, 48, 53]),
         });
 
         let valid = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53";
