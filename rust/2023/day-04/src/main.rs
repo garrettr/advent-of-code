@@ -7,7 +7,7 @@ const INPUT: &str = include_str!("input.txt");
 
 #[derive(Debug, PartialEq, Eq)]
 struct Card {
-    winning_numbers: Vec<i32>,
+    winning_numbers: HashSet<i32>,
     numbers: Vec<i32>,
 }
 
@@ -15,10 +15,7 @@ struct Card {
 struct ParseCardError;
 
 fn parse_ints(s: &str) -> Result<Vec<i32>, ParseIntError> {
-    s.trim()
-        .split_whitespace()
-        .map(|s| s.parse::<i32>())
-        .collect()
+    s.trim().split_whitespace().map(|s| s.parse()).collect()
 }
 
 impl FromStr for Card {
@@ -29,7 +26,10 @@ impl FromStr for Card {
         if sections.len() != 3 {
             return Err(ParseCardError);
         }
-        let winning_numbers = parse_ints(sections[1]).map_err(|_| ParseCardError)?;
+        let winning_numbers = parse_ints(sections[1])
+            .map_err(|_| ParseCardError)?
+            .into_iter()
+            .collect();
         let numbers = parse_ints(sections[2]).map_err(|_| ParseCardError)?;
         Ok(Card {
             winning_numbers,
@@ -39,23 +39,29 @@ impl FromStr for Card {
 }
 
 fn parse_cards(s: &str) -> Vec<Card> {
-    s.lines()
-        .map(|line| line.parse::<Card>().unwrap())
-        .collect()
+    s.lines().map(|line| line.parse().unwrap()).collect()
 }
 
 impl Card {
-    fn points(&self) -> i32 {
-        let winning_numbers: HashSet<i32> = self.winning_numbers.iter().cloned().collect();
-        let num_winners: i32 = self
-            .numbers
+    fn num_matching(&self) -> i32 {
+        self.numbers
             .iter()
-            .map(|n| if winning_numbers.contains(n) { 1 } else { 0 })
-            .sum();
-        if num_winners == 0 {
+            .map(|n| {
+                if self.winning_numbers.contains(n) {
+                    1
+                } else {
+                    0
+                }
+            })
+            .sum()
+    }
+
+    fn points(&self) -> i32 {
+        let num_matching = self.num_matching();
+        if num_matching == 0 {
             0
         } else {
-            i32::pow(2, num_winners as u32 - 1)
+            i32::pow(2, num_matching as u32 - 1)
         }
     }
 }
@@ -64,11 +70,20 @@ fn part1(input: &str) -> i32 {
     parse_cards(input).iter().map(|card| card.points()).sum()
 }
 
-fn part2(input: &str) -> () {}
+fn part2(input: &str) -> i32 {
+    let cards = parse_cards(input);
+    let mut copies_per_card = vec![1; cards.len()];
+    for (i, card) in cards.iter().enumerate() {
+        for j in 1..=(card.num_matching() as usize) {
+            copies_per_card[i + j] += copies_per_card[i];
+        }
+    }
+    copies_per_card.iter().sum()
+}
 
 fn main() {
     dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[cfg(test)]
@@ -76,7 +91,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_ints_on_valid_inputs() {
+    fn test_parse_ints() {
         let valid = "1 2 3";
         assert_eq!(parse_ints(valid), Ok(Vec::from([1, 2, 3])));
 
@@ -103,10 +118,7 @@ mod tests {
             parse_ints(valid_interior_whitespace),
             Ok(Vec::from([10, 1, 22]))
         );
-    }
 
-    #[test]
-    fn test_parse_ints_on_invalid_inputs() {
         let invalid = "1 foo 2";
         assert!(parse_ints(invalid).is_err());
     }
@@ -114,7 +126,7 @@ mod tests {
     #[test]
     fn test_card_fromstr() {
         let expected = Ok(Card {
-            winning_numbers: Vec::from([41, 48, 83, 86, 17]),
+            winning_numbers: HashSet::from([41, 48, 83, 86, 17]),
             numbers: Vec::from([83, 86, 6, 31, 17, 9, 48, 53]),
         });
 
@@ -135,9 +147,9 @@ mod tests {
         assert_eq!(part1(INPUT), 21919);
     }
 
-    // #[test]
-    // fn test_part2() {
-    //     // assert_eq!(part2(EXAMPLE), ());
-    //     // assert_eq!(part2(INPUT), ());
-    // }
+    #[test]
+    fn test_part2() {
+        assert_eq!(part2(EXAMPLE), 30);
+        assert_eq!(part2(INPUT), 9881048);
+    }
 }
