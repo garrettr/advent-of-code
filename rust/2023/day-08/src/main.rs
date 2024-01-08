@@ -14,7 +14,7 @@ struct Map<'a> {
 }
 
 static NODE_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?<id>[A-Z]{3}) = \((?<left>[A-Z]{3}), (?<right>[A-Z]{3})\)").unwrap()
+    Regex::new(r"(?<id>[A-Z0-9]{3}) = \((?<left>[A-Z0-9]{3}), (?<right>[A-Z0-9]{3})\)").unwrap()
 });
 
 fn parse_map<'a>(input: &'a str) -> Map<'a> {
@@ -35,12 +35,11 @@ fn parse_map<'a>(input: &'a str) -> Map<'a> {
     }
 }
 
-fn part1(input: &str) -> i32 {
-    let map = parse_map(input);
+fn navigate(map: &Map, start: &str, end: &str) -> i32 {
     let mut steps = 0;
-    let mut node = "AAA";
+    let mut node = start;
     for (step, instruction) in map.instructions.chars().cycle().enumerate() {
-        if node == "ZZZ" {
+        if node.ends_with(end) {
             steps = step;
             break;
         }
@@ -53,11 +52,43 @@ fn part1(input: &str) -> i32 {
     steps as i32
 }
 
-fn part2(input: &str) -> () {}
+fn part1(input: &str) -> i32 {
+    let map = parse_map(input);
+    navigate(&map, "AAA", "ZZZ")
+}
+
+fn gcd(mut n: u64, mut m: u64) -> u64 {
+    assert!(n != 0 && m != 0);
+    while m != 0 {
+        if m < n {
+            std::mem::swap(&mut m, &mut n);
+        }
+        m %= n;
+    }
+    n
+}
+
+fn lcm(a: u64, b: u64) -> u64 {
+    (a * b) / gcd(a, b)
+}
+
+fn part2(input: &str) -> u64 {
+    let map = parse_map(input);
+    let start_nodes = map
+        .nodes
+        .keys()
+        .filter(|&node| node.ends_with('A'))
+        .collect::<Vec<_>>();
+    let path_lens: Vec<u64> = start_nodes
+        .iter()
+        .map(|start_node| navigate(&map, start_node, "Z") as u64)
+        .collect();
+    path_lens.into_iter().reduce(|acc, x| lcm(acc, x)).unwrap()
+}
 
 fn main() {
     dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[cfg(test)]
@@ -73,7 +104,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), ());
-        // assert_eq!(part2(INPUT), ());
+        assert_eq!(part2(EXAMPLE3), 6);
+        assert_eq!(part2(INPUT), 19185263738117);
     }
 }
