@@ -13,48 +13,50 @@ struct Map<'a> {
     nodes: HashMap<&'a str, (&'a str, &'a str)>,
 }
 
-static NODE_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?<id>[A-Z0-9]{3}) = \((?<left>[A-Z0-9]{3}), (?<right>[A-Z0-9]{3})\)").unwrap()
-});
+impl<'a> Map<'a> {
+    const NODE_RE: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r"(?<id>[A-Z0-9]{3}) = \((?<left>[A-Z0-9]{3}), (?<right>[A-Z0-9]{3})\)").unwrap()
+    });
 
-fn parse_map<'a>(input: &'a str) -> Map<'a> {
-    let (instructions, rest) = input.split_once("\n\n").unwrap();
+    fn from_str(s: &'a str) -> Map<'a> {
+        let (instructions, rest) = s.split_once("\n\n").unwrap();
 
-    let mut nodes = HashMap::with_capacity(rest.lines().count());
-    for line in rest.lines() {
-        let (_full, [id, left, right]) = NODE_RE
-            .captures(line)
-            .map(|caps| caps.extract())
-            .expect("Node definition matched by regular expression");
-        nodes.insert(id, (left, right));
+        let mut nodes = HashMap::with_capacity(rest.lines().count());
+        for line in rest.lines() {
+            let (_full, [id, left, right]) = Self::NODE_RE
+                .captures(line)
+                .map(|caps| caps.extract())
+                .expect("Node definition matched by regular expression");
+            nodes.insert(id, (left, right));
+        }
+
+        Map {
+            instructions,
+            nodes,
+        }
     }
 
-    Map {
-        instructions,
-        nodes,
+    fn navigate(&self, start: &str, end: &str) -> u64 {
+        let mut steps = 0;
+        let mut node = start;
+        for (step, instruction) in self.instructions.chars().cycle().enumerate() {
+            if node.ends_with(end) {
+                steps = step;
+                break;
+            }
+            node = match instruction {
+                'L' => self.nodes[node].0,
+                'R' => self.nodes[node].1,
+                _ => panic!("Invalid node: {:?}", node),
+            }
+        }
+        steps as u64
     }
 }
 
-fn navigate(map: &Map, start: &str, end: &str) -> i32 {
-    let mut steps = 0;
-    let mut node = start;
-    for (step, instruction) in map.instructions.chars().cycle().enumerate() {
-        if node.ends_with(end) {
-            steps = step;
-            break;
-        }
-        node = match instruction {
-            'L' => map.nodes[node].0,
-            'R' => map.nodes[node].1,
-            _ => panic!("Invalid node: {:?}", node),
-        }
-    }
-    steps as i32
-}
-
-fn part1(input: &str) -> i32 {
-    let map = parse_map(input);
-    navigate(&map, "AAA", "ZZZ")
+fn part1(input: &str) -> u64 {
+    let map = Map::from_str(input);
+    map.navigate("AAA", "ZZZ")
 }
 
 fn gcd(mut n: u64, mut m: u64) -> u64 {
@@ -73,15 +75,15 @@ fn lcm(a: u64, b: u64) -> u64 {
 }
 
 fn part2(input: &str) -> u64 {
-    let map = parse_map(input);
-    let start_nodes = map
+    let map = Map::from_str(input);
+    let start_nodes: Vec<_> = map
         .nodes
         .keys()
         .filter(|&node| node.ends_with('A'))
-        .collect::<Vec<_>>();
-    let path_lens: Vec<u64> = start_nodes
+        .collect();
+    let path_lens: Vec<_> = start_nodes
         .iter()
-        .map(|start_node| navigate(&map, start_node, "Z") as u64)
+        .map(|start_node| map.navigate(start_node, "Z"))
         .collect();
     path_lens.into_iter().reduce(|acc, x| lcm(acc, x)).unwrap()
 }
