@@ -13,8 +13,8 @@ fn parse_histories(s: &str) -> Vec<Vec<i32>> {
         .collect()
 }
 
-fn analyze_history(history: &Vec<i32>) -> Vec<Vec<i32>> {
-    let mut analysis = vec![history.clone()];
+fn analyze_history(history: Vec<i32>) -> Vec<Vec<i32>> {
+    let mut analysis = vec![history];
     while !analysis.last().unwrap().iter().all(|&x| x == 0) {
         let last = analysis.last().expect("At least one element in analysis");
         let differences: Vec<_> = zip(last.iter(), last[1..].iter())
@@ -52,7 +52,7 @@ fn extrapolate_back(analysis: &mut Vec<Vec<i32>>) -> i32 {
 fn part1(input: &str) -> i32 {
     let histories: Vec<Vec<i32>> = parse_histories(input);
     histories
-        .iter()
+        .into_iter()
         .map(|history| analyze_history(history))
         .map(|mut analysis| extrapolate_next(&mut analysis))
         .sum()
@@ -60,7 +60,7 @@ fn part1(input: &str) -> i32 {
 
 fn part2(input: &str) -> i32 {
     parse_histories(input)
-        .iter()
+        .into_iter()
         .map(|history| analyze_history(history))
         .map(|mut analysis| extrapolate_back(&mut analysis))
         .sum()
