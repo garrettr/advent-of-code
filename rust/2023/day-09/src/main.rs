@@ -37,6 +37,18 @@ fn extrapolate_next(analysis: &mut Vec<Vec<i32>>) -> i32 {
     *analysis[0].last().unwrap()
 }
 
+fn extrapolate_back(analysis: &mut Vec<Vec<i32>>) -> i32 {
+    for i in (0..analysis.len()).rev() {
+        if i == analysis.len() - 1 {
+            analysis[i].insert(0, 0);
+        } else {
+            let extrapolated = analysis[i].first().unwrap() - analysis[i + 1].first().unwrap();
+            analysis[i].insert(0, extrapolated);
+        }
+    }
+    *analysis[0].first().unwrap()
+}
+
 fn part1(input: &str) -> i32 {
     let histories: Vec<Vec<i32>> = parse_histories(input);
     histories
@@ -46,11 +58,17 @@ fn part1(input: &str) -> i32 {
         .sum()
 }
 
-fn part2(input: &str) -> () {}
+fn part2(input: &str) -> i32 {
+    parse_histories(input)
+        .iter()
+        .map(|history| analyze_history(history))
+        .map(|mut analysis| extrapolate_back(&mut analysis))
+        .sum()
+}
 
 fn main() {
     dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[cfg(test)]
@@ -65,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), ());
-        // assert_eq!(part2(INPUT), ());
+        assert_eq!(part2(EXAMPLE), 2);
+        assert_eq!(part2(INPUT), 913);
     }
 }
