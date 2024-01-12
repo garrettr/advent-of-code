@@ -19,12 +19,12 @@ class ScratchCard:
         ]
         return cls(id, *numbers)
 
+    @property
     def matches(self) -> int:
         return len(self.winning_numbers & self.numbers_you_have)
 
     def score(self) -> int:
-        matches = self.matches()
-        return 2 ** (matches - 1) if matches else 0
+        return 2 ** (self.matches - 1) if self.matches else 0
 
 
 def parse_cards(input: str) -> list[ScratchCard]:
@@ -38,7 +38,7 @@ def part1(input: str):
 def part2(input: str):
     cards = parse_cards(input)
     for card in cards:
-        cards.extend(cards[card.id : card.id + card.matches()])
+        cards.extend(cards[card.id : card.id + card.matches])
     return len(cards)
 
 
