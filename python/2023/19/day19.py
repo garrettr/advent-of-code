@@ -32,7 +32,6 @@ class Part:
 
 
 class Result(Enum):
-    SEND = auto()
     ACCEPT = auto()
     REJECT = auto()
 
@@ -40,27 +39,24 @@ class Result(Enum):
 @dataclass
 class Rule:
     condition: str | None
-    result: Result
-    destination: str | None
+    consequent: str | Result
 
     @classmethod
     def from_str(cls, s: str):
         condition = None
-        result = None
-        destination = None
+        consequent = None
 
         if ":" in s:
             condition, s = s.split(":")
 
         if s == "A":
-            result = Result.ACCEPT
+            consequent = Result.ACCEPT
         elif s == "R":
-            result = Result.REJECT
+            consequent = Result.REJECT
         else:
-            result = Result.SEND
-            destination = s
+            consequent = s
 
-        return cls(condition, result, destination)
+        return cls(condition, consequent)
 
 
 @dataclass
@@ -94,10 +90,11 @@ def part1(input: str) -> int:
                 if not rule.condition or (
                     rule.condition and eval(rule.condition, globals(), part.ratings)
                 ):
-                    if rule.result == Result.SEND:
-                        workflow = workflows[rule.destination]
+                    consequent = rule.consequent
+                    if isinstance(consequent, str):
+                        workflow = workflows[consequent]
                     else:
-                        results[rule.result].append(part)
+                        results[consequent].append(part)
                         workflow = None
                     break
 
