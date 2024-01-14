@@ -18,6 +18,22 @@ enum AplentyError {
     ParseWorkflowError(String),
 }
 
+// To satisfy the `Error` trait a `Display` implementation is also needed.
+impl std::fmt::Display for AplentyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ParseIntError(e) => write!(f, "{}", e),
+            Self::ParseRatingError(s) => write!(f, "Invalid rating: {}", s),
+            Self::ParsePartError(s) => write!(f, "Invalid part: {}", s),
+            Self::ParseComparisonError(s) => write!(f, "Invalid comparison: {}", s),
+            Self::ParseTestError(s) => write!(f, "Invalid test: {}", s),
+            Self::ParseConseqError(s) => write!(f, "Invalid conseq: {}", s),
+            Self::ParseRuleError(s) => write!(f, "Invalid rule: {}", s),
+            Self::ParseWorkflowError(s) => write!(f, "Invalid workflow: {}", s),
+        }
+    }
+}
+
 // https://www.lurklurk.org/effective-rust/errors.html#nested-errors
 impl From<std::num::ParseIntError> for AplentyError {
     fn from(e: std::num::ParseIntError) -> Self {
@@ -50,22 +66,6 @@ impl FromStr for Rating {
 #[derive(Debug, PartialEq)]
 struct Part(HashMap<Rating, i32>);
 
-// To satisfy the `Error` trait a `Display` implementation is also needed.
-impl std::fmt::Display for AplentyError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::ParseIntError(e) => write!(f, "{}", e),
-            Self::ParseRatingError(s) => write!(f, "Invalid rating: {}", s),
-            Self::ParsePartError(s) => write!(f, "Invalid part: {}", s),
-            Self::ParseComparisonError(s) => write!(f, "Invalid comparison: {}", s),
-            Self::ParseTestError(s) => write!(f, "Invalid test: {}", s),
-            Self::ParseConseqError(s) => write!(f, "Invalid conseq: {}", s),
-            Self::ParseRuleError(s) => write!(f, "Invalid rule: {}", s),
-            Self::ParseWorkflowError(s) => write!(f, "Invalid workflow: {}", s),
-        }
-    }
-}
-
 static RATING_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?<rating>[xmas])=(?<value>\d+)").unwrap());
 
@@ -90,6 +90,12 @@ impl FromStr for Part {
             )))?
         }
         Ok(Part(ratings))
+    }
+}
+
+impl Part {
+    fn ratings_sum(&self) -> i32 {
+        self.0.values().sum()
     }
 }
 
@@ -140,11 +146,21 @@ impl FromStr for Test {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+impl Test {
+    fn test(&self, part: &Part) -> bool {
+        use Comparison::*;
+        match self.comparison {
+            LessThan => part.0.get(&self.rating).unwrap() < &self.value,
+            GreaterThan => part.0.get(&self.rating).unwrap() > &self.value,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 enum Conseq {
-    Sent(String),
-    Accepted,
-    Rejected,
+    Send(String),
+    Accept,
+    Reject,
 }
 
 impl FromStr for Conseq {
@@ -152,10 +168,10 @@ impl FromStr for Conseq {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "A" => Ok(Self::Accepted),
-            "R" => Ok(Self::Rejected),
+            "A" => Ok(Self::Accept),
+            "R" => Ok(Self::Reject),
             workflow if workflow.chars().all(|c| c.is_ascii_lowercase()) => {
-                Ok(Self::Sent(workflow.to_owned()))
+                Ok(Self::Send(workflow.to_owned()))
             }
             _ => Err(Self::Err::ParseConseqError(s.to_owned())),
         }
@@ -179,6 +195,15 @@ impl FromStr for Rule {
             _ => Err(Self::Err::ParseRuleError(s.to_owned()))?,
         };
         Ok(Rule { test, conseq })
+    }
+}
+
+impl Rule {
+    fn test(&self, part: &Part) -> bool {
+        match &self.test {
+            Some(test) => test.test(part),
+            None => true,
+        }
     }
 }
 
@@ -208,24 +233,73 @@ impl FromStr for Workflow {
     }
 }
 
-fn part1(input: &str) -> u64 {
+impl Workflow {
+    fn process_part(&self, part: &Part) -> Conseq {
+        for rule in &self.rules {
+            if rule.test(part) {
+                return rule.conseq.clone();
+            }
+        }
+        panic!("At least one rule should always match")
+    }
+}
+
+#[derive(Debug)]
+struct Workflows(HashMap<String, Workflow>);
+
+impl FromStr for Workflows {
+    type Err = AplentyError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let workflows: Result<HashMap<String, Workflow>, _> = s
+            .lines()
+            .map(|line| {
+                line.parse::<Workflow>()
+                    .map(|workflow| (workflow.name.clone(), workflow))
+            })
+            .collect();
+        Ok(Self(workflows?))
+    }
+}
+
+impl Workflows {
+    fn process_part(&self, part: &Part) -> bool {
+        use Conseq::*;
+        let mut workflow_name = String::from("in");
+        loop {
+            let workflow = self.0.get(&workflow_name).unwrap();
+            match workflow.process_part(part) {
+                Send(to) => {
+                    workflow_name = to;
+                }
+                Accept => {
+                    return true;
+                }
+                Reject => {
+                    return false;
+                }
+            }
+        }
+    }
+}
+
+fn part1(input: &str) -> i32 {
     let (workflows, parts) = input
         .split_once("\n\n")
         .expect("two sections separated by two newlines");
-
-    let workflows: HashMap<String, Workflow> = workflows
-        .lines()
-        .map(|line| line.parse().unwrap())
-        .map(|workflow: Workflow| (workflow.name.clone(), workflow))
+    let workflows: Workflows = workflows.parse().expect("successfully parsed workflows");
+    let parts: Vec<Part> = parts.lines().map(|line| line.parse().unwrap()).collect();
+    let accepted: Vec<_> = parts
+        .iter()
+        .filter(|&part| workflows.process_part(part))
         .collect();
-    dbg!(workflows);
-    0
+    accepted.iter().map(|&part| part.ratings_sum()).sum()
 }
 
 fn part2(input: &str) -> () {}
 
 fn main() {
-    dbg!(part1(EXAMPLE));
+    dbg!(part1(INPUT));
     // dbg!(part2(INPUT));
 }
 
@@ -318,9 +392,9 @@ mod tests {
 
     #[test]
     fn test_parse_conseq() {
-        assert_eq!("A".parse(), Ok(Conseq::Accepted));
-        assert_eq!("R".parse(), Ok(Conseq::Rejected));
-        assert_eq!("abc".parse(), Ok(Conseq::Sent(String::from("abc"))));
+        assert_eq!("A".parse(), Ok(Conseq::Accept));
+        assert_eq!("R".parse(), Ok(Conseq::Reject));
+        assert_eq!("abc".parse(), Ok(Conseq::Send(String::from("abc"))));
 
         assert_eq!(
             "ABC".parse::<Conseq>(),
@@ -338,7 +412,7 @@ mod tests {
                     comparison: Comparison::LessThan,
                     value: 2006
                 }),
-                conseq: Conseq::Sent("qkq".to_owned())
+                conseq: Conseq::Send("qkq".to_owned())
             })
         );
 
@@ -350,7 +424,7 @@ mod tests {
                     comparison: Comparison::GreaterThan,
                     value: 2090
                 }),
-                conseq: Conseq::Accepted
+                conseq: Conseq::Accept
             })
         );
 
@@ -362,7 +436,7 @@ mod tests {
                     comparison: Comparison::GreaterThan,
                     value: 2440
                 }),
-                conseq: Conseq::Rejected
+                conseq: Conseq::Reject
             })
         );
 
@@ -370,7 +444,7 @@ mod tests {
             "rfg".parse(),
             Ok(Rule {
                 test: None,
-                conseq: Conseq::Sent("rfg".to_owned())
+                conseq: Conseq::Send("rfg".to_owned())
             })
         );
 
@@ -378,7 +452,7 @@ mod tests {
             "A".parse(),
             Ok(Rule {
                 test: None,
-                conseq: Conseq::Accepted
+                conseq: Conseq::Accept
             })
         );
 
@@ -386,7 +460,7 @@ mod tests {
             "R".parse(),
             Ok(Rule {
                 test: None,
-                conseq: Conseq::Rejected
+                conseq: Conseq::Reject
             })
         );
     }
@@ -403,11 +477,11 @@ mod tests {
                         comparison: Comparison::GreaterThan,
                         value: 1716,
                     }),
-                    conseq: Conseq::Rejected,
+                    conseq: Conseq::Reject,
                 },
                 Rule {
                     test: None,
-                    conseq: Conseq::Accepted,
+                    conseq: Conseq::Accept,
                 },
             ]),
         };
@@ -423,7 +497,7 @@ mod tests {
                         comparison: Comparison::GreaterThan,
                         value: 2770,
                     }),
-                    conseq: Conseq::Sent("qs".to_owned()),
+                    conseq: Conseq::Send("qs".to_owned()),
                 },
                 Rule {
                     test: Some(Test {
@@ -431,11 +505,11 @@ mod tests {
                         comparison: Comparison::LessThan,
                         value: 1801,
                     }),
-                    conseq: Conseq::Sent("hdj".to_owned()),
+                    conseq: Conseq::Send("hdj".to_owned()),
                 },
                 Rule {
                     test: None,
-                    conseq: Conseq::Rejected,
+                    conseq: Conseq::Reject,
                 },
             ]),
         };
@@ -444,13 +518,13 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        // assert_eq!(part1(EXAMPLE), ());
-        // assert_eq!(part1(INPUT), ());
+        assert_eq!(part1(EXAMPLE), 19114);
+        assert_eq!(part1(INPUT), 362930);
     }
 
-    #[test]
-    fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), ());
-        // assert_eq!(part2(INPUT), ());
-    }
+    // #[test]
+    // fn test_part2() {
+    //     assert_eq!(part2(EXAMPLE), ());
+    //     assert_eq!(part2(INPUT), ());
+    // }
 }
