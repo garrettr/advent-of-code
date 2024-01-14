@@ -2,6 +2,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
+use strum::EnumString;
 
 const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
@@ -9,7 +10,7 @@ const INPUT: &str = include_str!("input.txt");
 #[derive(Debug, PartialEq, Eq)]
 enum AplentyError {
     ParseIntError(std::num::ParseIntError),
-    ParseRatingError(String),
+    ParseCategoryError(strum::ParseError),
     ParsePartError(String),
     ParseComparisonError(String),
     ParseTestError(String),
@@ -23,7 +24,7 @@ impl std::fmt::Display for AplentyError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ParseIntError(e) => write!(f, "{}", e),
-            Self::ParseRatingError(s) => write!(f, "Invalid rating: {}", s),
+            Self::ParseCategoryError(e) => write!(f, "Invalid category: {}", e),
             Self::ParsePartError(s) => write!(f, "Invalid part: {}", s),
             Self::ParseComparisonError(s) => write!(f, "Invalid comparison: {}", s),
             Self::ParseTestError(s) => write!(f, "Invalid test: {}", s),
@@ -41,45 +42,38 @@ impl From<std::num::ParseIntError> for AplentyError {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-enum Rating {
+impl From<strum::ParseError> for AplentyError {
+    fn from(e: strum::ParseError) -> Self {
+        Self::ParseCategoryError(e)
+    }
+}
+
+#[derive(Debug, EnumString, PartialEq, Eq, Hash, Copy, Clone)]
+#[strum(serialize_all = "lowercase")]
+enum Category {
     X,
     M,
     A,
     S,
 }
 
-impl FromStr for Rating {
-    type Err = AplentyError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "x" => Ok(Self::X),
-            "m" => Ok(Self::M),
-            "a" => Ok(Self::A),
-            "s" => Ok(Self::S),
-            _ => Err(Self::Err::ParseRatingError(s.to_owned())),
-        }
-    }
-}
-
 #[derive(Debug, PartialEq)]
-struct Part(HashMap<Rating, i32>);
+struct Part(HashMap<Category, i32>);
 
 static RATING_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?<rating>[xmas])=(?<value>\d+)").unwrap());
+    Lazy::new(|| Regex::new(r"(?<category>[xmas])=(?<value>\d+)").unwrap());
 
 impl FromStr for Part {
     type Err = AplentyError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut ratings = HashMap::with_capacity(4);
-        for (_, [rating, value]) in RATING_RE.captures_iter(s).map(|c| c.extract()) {
-            let rating = rating.parse()?;
+        for (_, [category, value]) in RATING_RE.captures_iter(s).map(|c| c.extract()) {
+            let category = category.parse()?;
             let value = value.parse().map_err(|_| {
                 Self::Err::ParsePartError(format!("Invalid rating value {}", value))
             })?;
-            ratings.insert(rating, value);
+            ratings.insert(category, value);
         }
         if ratings.len() != 4 {
             Err(Self::Err::ParsePartError(format!(
@@ -119,27 +113,27 @@ impl FromStr for Comparison {
 
 #[derive(Debug, PartialEq, Eq)]
 struct Test {
-    rating: Rating,
+    category: Category,
     comparison: Comparison,
     value: i32,
 }
 
 static TEST_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?<rating>[xmas])(?<comparison><|>)(?<value>\d+)").unwrap());
+    Lazy::new(|| Regex::new(r"(?<category>[xmas])(?<comparison><|>)(?<value>\d+)").unwrap());
 
 impl FromStr for Test {
     type Err = AplentyError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (_, [rating, comparison, value]) = TEST_RE
+        let (_, [category, comparison, value]) = TEST_RE
             .captures(s)
             .map(|caps| caps.extract())
             .ok_or(Self::Err::ParseTestError(s.to_owned()))?;
-        let rating = rating.parse()?;
+        let category = category.parse()?;
         let comparison = comparison.parse()?;
         let value = value.parse()?;
         Ok(Test {
-            rating,
+            category,
             comparison,
             value,
         })
@@ -150,8 +144,8 @@ impl Test {
     fn test(&self, part: &Part) -> bool {
         use Comparison::*;
         match self.comparison {
-            LessThan => part.0.get(&self.rating).unwrap() < &self.value,
-            GreaterThan => part.0.get(&self.rating).unwrap() > &self.value,
+            LessThan => part.0.get(&self.category).unwrap() < &self.value,
+            GreaterThan => part.0.get(&self.category).unwrap() > &self.value,
         }
     }
 }
@@ -308,25 +302,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_rating() {
-        assert_eq!("x".parse(), Ok(Rating::X));
-        assert_eq!("m".parse(), Ok(Rating::M));
-        assert_eq!("a".parse(), Ok(Rating::A));
-        assert_eq!("s".parse(), Ok(Rating::S));
+    fn test_parse_category() {
+        assert_eq!("x".parse(), Ok(Category::X));
+        assert_eq!("m".parse(), Ok(Category::M));
+        assert_eq!("a".parse(), Ok(Category::A));
+        assert_eq!("s".parse(), Ok(Category::S));
 
         assert_eq!(
-            "z".parse::<Rating>(),
-            Err(AplentyError::ParseRatingError("z".to_owned()))
-        )
+            "z".parse::<Category>(),
+            Err(strum::ParseError::VariantNotFound)
+        );
     }
 
     #[test]
     fn test_parse_part() {
         let expected = Part(HashMap::from([
-            (Rating::X, 1),
-            (Rating::M, 22),
-            (Rating::A, 333),
-            (Rating::S, 4444),
+            (Category::X, 1),
+            (Category::M, 22),
+            (Category::A, 333),
+            (Category::S, 4444),
         ]));
         assert_eq!("{x=1,m=22,a=333,s=4444}".parse(), Ok(expected));
 
@@ -362,7 +356,7 @@ mod tests {
         assert_eq!(
             "a<2006".parse(),
             Ok(Test {
-                rating: Rating::A,
+                category: Category::A,
                 comparison: Comparison::LessThan,
                 value: 2006
             })
@@ -370,7 +364,7 @@ mod tests {
         assert_eq!(
             "m>2090".parse(),
             Ok(Test {
-                rating: Rating::M,
+                category: Category::M,
                 comparison: Comparison::GreaterThan,
                 value: 2090
             })
@@ -408,7 +402,7 @@ mod tests {
             "a<2006:qkq".parse(),
             Ok(Rule {
                 test: Some(Test {
-                    rating: Rating::A,
+                    category: Category::A,
                     comparison: Comparison::LessThan,
                     value: 2006
                 }),
@@ -420,7 +414,7 @@ mod tests {
             "m>2090:A".parse(),
             Ok(Rule {
                 test: Some(Test {
-                    rating: Rating::M,
+                    category: Category::M,
                     comparison: Comparison::GreaterThan,
                     value: 2090
                 }),
@@ -432,7 +426,7 @@ mod tests {
             "x>2440:R".parse(),
             Ok(Rule {
                 test: Some(Test {
-                    rating: Rating::X,
+                    category: Category::X,
                     comparison: Comparison::GreaterThan,
                     value: 2440
                 }),
@@ -473,7 +467,7 @@ mod tests {
             rules: Vec::from([
                 Rule {
                     test: Some(Test {
-                        rating: Rating::A,
+                        category: Category::A,
                         comparison: Comparison::GreaterThan,
                         value: 1716,
                     }),
@@ -493,7 +487,7 @@ mod tests {
             rules: Vec::from([
                 Rule {
                     test: Some(Test {
-                        rating: Rating::S,
+                        category: Category::S,
                         comparison: Comparison::GreaterThan,
                         value: 2770,
                     }),
@@ -501,7 +495,7 @@ mod tests {
                 },
                 Rule {
                     test: Some(Test {
-                        rating: Rating::M,
+                        category: Category::M,
                         comparison: Comparison::LessThan,
                         value: 1801,
                     }),
