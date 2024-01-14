@@ -1,7 +1,6 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::collections::HashMap;
-use std::str::FromStr;
+use std::{collections::HashMap, ops::Index, str::FromStr};
 use strum::EnumString;
 
 const EXAMPLE: &str = include_str!("example.txt");
@@ -58,7 +57,31 @@ enum Category {
 }
 
 #[derive(Debug, PartialEq)]
-struct Part(HashMap<Category, i32>);
+struct Part {
+    x: u64,
+    m: u64,
+    a: u64,
+    s: u64,
+}
+
+impl Part {
+    const fn sum(&self) -> u64 {
+        self.x + self.m + self.a + self.s
+    }
+}
+
+impl Index<Category> for Part {
+    type Output = u64;
+
+    fn index(&self, category: Category) -> &Self::Output {
+        match category {
+            Category::X => &self.x,
+            Category::M => &self.m,
+            Category::A => &self.a,
+            Category::S => &self.s,
+        }
+    }
+}
 
 static RATING_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?<category>[xmas])=(?<value>\d+)").unwrap());
@@ -66,30 +89,19 @@ static RATING_RE: Lazy<Regex> =
 impl FromStr for Part {
     type Err = AplentyError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut ratings = HashMap::with_capacity(4);
-        for (_, [category, value]) in RATING_RE.captures_iter(s).map(|c| c.extract()) {
-            let category = category.parse()?;
-            let value = value.parse().map_err(|_| {
-                Self::Err::ParsePartError(format!("Invalid rating value {}", value))
-            })?;
-            ratings.insert(category, value);
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
+        let (mut x, mut m, mut a, mut s) = (0, 0, 0, 0);
+        for (_, [category, value]) in RATING_RE.captures_iter(string).map(|c| c.extract()) {
+            let category: Category = category.parse()?;
+            let value: u64 = value.parse()?;
+            match category {
+                Category::X => x = value,
+                Category::M => m = value,
+                Category::A => a = value,
+                Category::S => s = value,
+            }
         }
-        if ratings.len() != 4 {
-            Err(Self::Err::ParsePartError(format!(
-                "Expected 4 ratings, found {}: {:#?} => {:#?}",
-                ratings.len(),
-                s,
-                ratings
-            )))?
-        }
-        Ok(Part(ratings))
-    }
-}
-
-impl Part {
-    fn ratings_sum(&self) -> i32 {
-        self.0.values().sum()
+        Ok(Part { x, m, a, s })
     }
 }
 
@@ -115,7 +127,7 @@ impl FromStr for Comparison {
 struct Test {
     category: Category,
     comparison: Comparison,
-    value: i32,
+    value: u64,
 }
 
 static TEST_RE: Lazy<Regex> =
@@ -144,8 +156,8 @@ impl Test {
     fn test(&self, part: &Part) -> bool {
         use Comparison::*;
         match self.comparison {
-            LessThan => part.0.get(&self.category).unwrap() < &self.value,
-            GreaterThan => part.0.get(&self.category).unwrap() > &self.value,
+            LessThan => part[self.category] < self.value,
+            GreaterThan => part[self.category] > self.value,
         }
     }
 }
@@ -277,7 +289,7 @@ impl Workflows {
     }
 }
 
-fn part1(input: &str) -> i32 {
+fn part1(input: &str) -> u64 {
     let (workflows, parts) = input
         .split_once("\n\n")
         .expect("two sections separated by two newlines");
@@ -287,7 +299,7 @@ fn part1(input: &str) -> i32 {
         .iter()
         .filter(|&part| workflows.process_part(part))
         .collect();
-    accepted.iter().map(|&part| part.ratings_sum()).sum()
+    accepted.iter().map(|&part| part.sum()).sum()
 }
 
 fn part2(input: &str) -> () {}
@@ -316,28 +328,23 @@ mod tests {
 
     #[test]
     fn test_parse_part() {
-        let expected = Part(HashMap::from([
-            (Category::X, 1),
-            (Category::M, 22),
-            (Category::A, 333),
-            (Category::S, 4444),
-        ]));
+        let expected = Part {
+            x: 1,
+            m: 22,
+            a: 333,
+            s: 4444,
+        };
         assert_eq!("{x=1,m=22,a=333,s=4444}".parse(), Ok(expected));
 
-        assert!(matches!(
-            "{x=1,m=22,a=jklol,s=4444}".parse::<Part>(),
-            Err(AplentyError::ParsePartError(_))
-        ));
-
-        assert!(matches!(
-            "{x=1,m=22,s=4444}".parse::<Part>(),
-            Err(AplentyError::ParsePartError(_))
-        ));
-
-        assert!(matches!(
-            "{x=1,m=22,a=333,j=4444}".parse::<Part>(),
-            Err(AplentyError::ParsePartError(_))
-        ));
+        assert_eq!(
+            "{x=1,m=22,a=jklol,s=4444}".parse(),
+            Ok(Part {
+                x: 1,
+                m: 22,
+                a: 0,
+                s: 4444
+            })
+        );
     }
 
     #[test]
