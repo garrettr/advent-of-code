@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::{collections::HashMap, fmt::Display};
 
 const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
@@ -40,40 +40,41 @@ enum StepKind {
 }
 
 #[derive(Debug)]
-struct Step {
-    label: String,
+struct Step<'a> {
+    label: &'a str,
     kind: StepKind,
 }
 
-impl FromStr for Step {
-    type Err = Day15Error;
+impl<'a> Step<'a> {
+    fn from_str(s: &'a str) -> Result<Step<'a>, Day15Error> {
+        use Day15Error::*;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.contains('=') {
             let (label, focal_length) = s
                 .split_once('=')
-                .ok_or_else(|| Self::Err::ParseStepError(s.to_owned()))?;
+                .ok_or_else(|| ParseStepError(s.to_owned()))?;
             let focal_length = focal_length.parse()?;
             return Ok(Self {
-                label: label.to_owned(),
+                label,
                 kind: StepKind::Insert { focal_length },
             });
         } else if s.contains('-') {
             let (label, _) = s
                 .split_once('-')
-                .ok_or_else(|| Self::Err::ParseStepError(s.to_owned()))?;
+                .ok_or_else(|| ParseStepError(s.to_owned()))?;
             return Ok(Self {
-                label: label.to_owned(),
+                label,
                 kind: StepKind::Remove,
             });
         }
-        Err(Self::Err::ParseStepError(s.to_owned()))
+
+        Err(ParseStepError(s.to_owned()))
     }
 }
 
 #[derive(Debug)]
-struct Lens {
-    label: String,
+struct Lens<'a> {
+    label: &'a str,
     focal_length: u8,
 }
 
@@ -81,7 +82,7 @@ fn parse(input: &str) -> Vec<Step> {
     input
         .trim()
         .split(',')
-        .map(|step| step.parse().expect("step should be parsed successfully"))
+        .map(|s| Step::from_str(s).expect("step should be parsed successfully"))
         .collect()
 }
 
@@ -96,11 +97,12 @@ fn part2(input: &str) -> u32 {
     for step in steps {
         let box_num = hash(&step.label) as u8;
         let r#box = boxes.entry(box_num).or_insert(Vec::new());
-        let lens_with_same_label = r#box.iter().position(|lens| lens.label == step.label);
+        let label = step.label;
+        let lens_with_same_label = r#box.iter().position(|lens| lens.label == label);
         match step.kind {
             StepKind::Insert { focal_length } => {
                 (*r#box).push(Lens {
-                    label: step.label,
+                    label,
                     focal_length,
                 });
                 if let Some(i) = lens_with_same_label {
