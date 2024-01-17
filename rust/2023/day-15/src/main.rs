@@ -117,12 +117,11 @@ fn part2(input: &str) -> u32 {
 
     boxes
         .iter()
-        .map(|(&box_num, r#box)| {
+        .flat_map(move |(&box_num, r#box)| {
             r#box
                 .iter()
                 .enumerate()
-                .map(|(i, lens)| focusing_power(box_num, i as u8, lens.focal_length))
-                .sum::<u32>()
+                .map(move |(i, lens)| focusing_power(box_num, i as u8, lens.focal_length))
         })
         .sum()
 }
