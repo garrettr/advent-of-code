@@ -78,12 +78,11 @@ struct Lens<'a> {
     focal_length: u8,
 }
 
-fn parse(input: &str) -> Vec<Step> {
+fn parse(input: &str) -> impl Iterator<Item = Step> {
     input
         .trim()
         .split(',')
         .map(|s| Step::from_str(s).expect("step should be parsed successfully"))
-        .collect()
 }
 
 fn focusing_power(box_num: u8, slot_num: u8, focal_length: u8) -> u32 {
