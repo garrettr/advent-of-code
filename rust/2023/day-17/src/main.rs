@@ -173,7 +173,7 @@ fn find_target(raw_grid: &str) -> GridPoint {
     )
 }
 
-fn part1(input: &str) -> i32 {
+fn _solve(input: &str, min_steps: i32, max_steps: i32) -> i32 {
     let grid: Grid = input.parse().expect("grid should be parsed");
     let target = find_target(input);
 
@@ -197,13 +197,9 @@ fn part1(input: &str) -> i32 {
     let mut seen: HashSet<(Position, i32)> = HashSet::new();
 
     while let Some(state) = queue.pop() {
-        let State {
-            cost: cost,
-            pos: pos,
-            steps: steps,
-        } = state.0;
+        let State { cost, pos, steps } = state.0;
 
-        if pos.loc == target {
+        if pos.loc == target && steps >= min_steps {
             return cost;
         }
 
@@ -212,26 +208,28 @@ fn part1(input: &str) -> i32 {
         }
         seen.insert((pos, steps));
 
-        let left = pos.rotate_and_step(Rotation::CounterClockwise);
-        if grid.0.contains_key(&left.loc) {
-            queue.push(Reverse(State {
-                cost: cost + grid.0[&left.loc],
-                pos: left,
-                steps: 1,
-            }));
-        }
+        if steps >= min_steps {
+            let left = pos.rotate_and_step(Rotation::CounterClockwise);
+            if grid.0.contains_key(&left.loc) {
+                queue.push(Reverse(State {
+                    cost: cost + grid.0[&left.loc],
+                    pos: left,
+                    steps: 1,
+                }));
+            }
 
-        let right = pos.rotate_and_step(Rotation::Clockwise);
-        if grid.0.contains_key(&right.loc) {
-            queue.push(Reverse(State {
-                cost: cost + grid.0[&right.loc],
-                pos: right,
-                steps: 1,
-            }));
+            let right = pos.rotate_and_step(Rotation::Clockwise);
+            if grid.0.contains_key(&right.loc) {
+                queue.push(Reverse(State {
+                    cost: cost + grid.0[&right.loc],
+                    pos: right,
+                    steps: 1,
+                }));
+            }
         }
 
         let forward = pos.step();
-        if steps < 3 && grid.0.contains_key(&forward.loc) {
+        if steps < max_steps && grid.0.contains_key(&forward.loc) {
             queue.push(Reverse(State {
                 cost: cost + grid.0[&forward.loc],
                 pos: forward,
@@ -243,11 +241,17 @@ fn part1(input: &str) -> i32 {
     -1
 }
 
-fn part2(input: &str) -> () {}
+fn part1(input: &str) -> i32 {
+    _solve(input, 0, 3)
+}
+
+fn part2(input: &str) -> i32 {
+    _solve(input, 4, 10)
+}
 
 fn main() {
     dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[cfg(test)]
@@ -359,7 +363,8 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), ());
-        // assert_eq!(part2(INPUT), ());
+        assert_eq!(part2(EXAMPLE), 94);
+        assert_eq!(part2(EXAMPLE2), 71);
+        assert_eq!(part2(INPUT), 1411);
     }
 }
