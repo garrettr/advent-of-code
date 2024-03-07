@@ -35,6 +35,12 @@ def do_language_specific_setup(language: str, year: int, day: int, path):
             solution_src.chmod(0o755)
 
         case "rust":
+            # Create parent directory (`rust/<year>`).
+            try:
+                path.parent.mkdir(parents=True)
+            except FileExistsError:
+                pass
+
             # Create challenge directory and boilerplate binary package with Cargo.
             try:
                 subprocess.run(
