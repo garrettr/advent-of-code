@@ -18,14 +18,20 @@ EXAMPLE = """199
 263"""
 
 
+def parse(input: str) -> list[int]:
+    return [int(x) for x in input.splitlines()]
+
+
 def part1(input: str):
     "Count the number of times a depth measurement increases from the previous measurement."
-    dms = [int(x) for x in input.splitlines()]
-    return sum(x < y for (x, y) in pairwise(dms))
+    return sum(x < y for (x, y) in pairwise(parse(input)))
 
 
 def part2(input: str):
-    pass
+    "Count the increases between sums of a three-measurement sliding window"
+    dms = parse(input)
+    windows = zip(dms, dms[1:], dms[2:])
+    return sum(x < y for (x, y) in pairwise(sum(window) for window in windows))
 
 
 class TestDay1(unittest.TestCase):
@@ -35,11 +41,11 @@ class TestDay1(unittest.TestCase):
 
     def test_part1(self):
         self.assertEqual(part1(self.example), 7)
-        self.assertEqual(part1(self.input), None)
+        self.assertEqual(part1(self.input), 1711)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 5)
+        self.assertEqual(part2(self.input), 1743)
 
 
 if __name__ == "__main__":
