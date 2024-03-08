@@ -30,7 +30,19 @@ def part1(input: str):
 
 
 def part2(input: str):
-    pass
+    horizontal_position = depth = aim = 0
+    for line in input.strip().split("\n"):
+        action, value = line.split()
+        value = int(value)
+        match action:
+            case "down":
+                aim += value
+            case "up":
+                aim -= value
+            case "forward":
+                horizontal_position += value
+                depth += aim * value
+    return horizontal_position * depth
 
 
 class TestDay2(unittest.TestCase):
@@ -40,11 +52,11 @@ class TestDay2(unittest.TestCase):
 
     def test_part1(self):
         self.assertEqual(part1(self.example), 150)
-        self.assertEqual(part1(self.input), None)
+        self.assertEqual(part1(self.input), 1727835)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 900)
+        self.assertEqual(part2(self.input), 1544000595)
 
 
 if __name__ == "__main__":
