@@ -1,13 +1,17 @@
 const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
 
-fn part1(input: &str) -> i64 {}
+fn part1(input: &str) -> u32 {
+    0
+}
 
-fn part2(input: &str) -> i64 {}
+fn part2(input: &str) -> u32 {
+    0
+}
 
 fn main() {
     dbg!(part1(EXAMPLE));
-    // dbg!(part2(INPUT));
+    // dbg!(part2(EXAMPLE));
 }
 
 #[cfg(test)]
