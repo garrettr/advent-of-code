@@ -66,12 +66,21 @@ fn part1(input: &str) -> u32 {
 }
 
 fn part2(input: &str) -> u32 {
-    0
+    let (numbers, mut boards) = parse(input);
+    for i in 5..numbers.len() {
+        let drawn = &numbers[..i];
+        let last_board = boards.last().unwrap().clone();
+        boards.retain(|board| !won(board, &drawn));
+        if boards.len() == 0 {
+            return score(&last_board, &drawn);
+        }
+    }
+    unreachable!("solution not found");
 }
 
 fn main() {
     dbg!(part1(INPUT));
-    // dbg!(part2(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[cfg(test)]
@@ -149,7 +158,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), 0);
-        // assert_eq!(part2(INPUT), 0);
+        assert_eq!(part2(EXAMPLE), 1924);
+        assert_eq!(part2(INPUT), 10030);
     }
 }
