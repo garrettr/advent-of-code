@@ -56,6 +56,7 @@ where
         self.len() == 0
     }
 
+    // TODO: return an iterator instead?
     pub fn most_common(&self, n: Option<usize>) -> Vec<(&T, &usize)> {
         let mut counts: Vec<_> = self.map.iter().collect();
         counts.sort_by_key(|c| *c.1 as isize * -1);
