@@ -79,12 +79,22 @@ fn part1(input: &str) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    0
+    let lines = parse(input);
+    let points: Vec<_> = lines.iter().map(|line| line.points()).flatten().collect();
+    let counter: Counter<_> = points.iter().collect();
+    let points_with_two_or_more_overlapping_lines: Vec<_> = counter
+        .most_common(None)
+        .into_iter()
+        .filter_map(|(&point, &count)| if count > 1 { Some(point) } else { None })
+        .collect();
+    // TODO: try to rework the above into an iterator chain that only
+    // `.collect()`s once, at the end.
+    points_with_two_or_more_overlapping_lines.len()
 }
 
 fn main() {
-    dbg!(part1(EXAMPLE));
-    // dbg!(part2(EXAMPLE));
+    dbg!(part1(INPUT));
+    dbg!(part2(INPUT));
 }
 
 #[cfg(test)]
@@ -92,13 +102,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_point() {
+    fn test_point_from_input() {
         assert_eq!(Point::from_input("0,9"), Point(0, 9));
         assert_eq!(Point::from_input("7,4"), Point(7, 4));
     }
 
     #[test]
-    fn test_line() {
+    fn test_line_from_input() {
         assert_eq!(
             Line::from_input("1,1 -> 1,3"),
             Line(Point(1, 1), Point(1, 3))
@@ -107,10 +117,30 @@ mod tests {
             Line::from_input("9,7 -> 7,7"),
             Line(Point(9, 7), Point(7, 7))
         );
+    }
 
-        assert!(Line::from_input("1,1 -> 1,3").is_horizontal_or_vertical());
-        assert!(Line::from_input("9,7 -> 7,7").is_horizontal_or_vertical());
+    #[test]
+    fn test_line_is_horizontal_or_vertical() {
+        assert_eq!(
+            Line::from_input("1,1 -> 1,3").is_horizontal_or_vertical(),
+            true
+        );
+        assert_eq!(
+            Line::from_input("9,7 -> 7,7").is_horizontal_or_vertical(),
+            true
+        );
+        assert_eq!(
+            Line::from_input("1,1 -> 3,3").is_horizontal_or_vertical(),
+            false
+        );
+        assert_eq!(
+            Line::from_input("9,7 -> 7,9").is_horizontal_or_vertical(),
+            false
+        );
+    }
 
+    #[test]
+    fn test_points() {
         assert_eq!(
             Line::from_input("1,1 -> 1,3").points(),
             vec![Point(1, 1), Point(1, 2), Point(1, 3)]
@@ -118,6 +148,14 @@ mod tests {
         assert_eq!(
             Line::from_input("9,7 -> 7,7").points(),
             vec![Point(9, 7), Point(8, 7), Point(7, 7)]
+        );
+        assert_eq!(
+            Line::from_input("1,1 -> 3,3").points(),
+            vec![Point(1, 1), Point(2, 2), Point(3, 3)]
+        );
+        assert_eq!(
+            Line::from_input("9,7 -> 7,9").points(),
+            vec![Point(9, 7), Point(8, 8), Point(7, 9)]
         );
     }
 
@@ -129,7 +167,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        // assert_eq!(part2(EXAMPLE), 0);
-        // assert_eq!(part2(INPUT), 0);
+        assert_eq!(part2(EXAMPLE), 12);
+        assert_eq!(part2(INPUT), 19676);
     }
 }
