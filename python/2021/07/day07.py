@@ -17,7 +17,12 @@ def part1(input: str):
 
 
 def part2(input: str):
-    pass
+    crabs = [int(x) for x in input.strip().split(",")]
+    fuel_costs = [
+        sum([sum(range(1, abs(crab - position) + 1)) for crab in crabs])
+        for position in range(min(crabs), max(crabs))
+    ]
+    return min(fuel_costs)
 
 
 class TestDay7(unittest.TestCase):
@@ -29,9 +34,9 @@ class TestDay7(unittest.TestCase):
         self.assertEqual(part1(self.example), 37)
         self.assertEqual(part1(self.input), 341534)
 
-    # def test_part2(self):
-    #     self.assertEqual(part2(self.example), None)
-    #     self.assertEqual(part2(self.input), None)
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 168)
+        self.assertEqual(part2(self.input), 93397632)
 
 
 if __name__ == "__main__":
