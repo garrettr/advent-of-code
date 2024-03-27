@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from functools import cache
 import unittest
 
 from advent import get_puzzle_input
@@ -16,10 +17,23 @@ def part1(input: str):
     return min(fuel_costs)
 
 
+# Speed up part2 by:
+# 1. Tracking the current min fuel cost instead of creating a list of all the
+#    fuel costs and then finding the minimum of the list.
+#    a) Result: 12.88s -> 12.86s! Not worth it!
+# 2. Use closed form solution to compute sum of range.
+#    a) Result: 12.88s -> 0.294s! Wow!!
+# 3. Memoize computing the sum of a range.
+#    a) Result: 0.294s -> 0.264s
+@cache
+def range_sum(n: int) -> int:
+    return n * (n + 1) // 2
+
+
 def part2(input: str):
     crabs = [int(x) for x in input.strip().split(",")]
     fuel_costs = [
-        sum([sum(range(1, abs(crab - position) + 1)) for crab in crabs])
+        sum([range_sum(abs(crab - position)) for crab in crabs])
         for position in range(min(crabs), max(crabs))
     ]
     return min(fuel_costs)
