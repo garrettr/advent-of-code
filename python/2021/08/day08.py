@@ -15,12 +15,13 @@ def parse(input: str):
 
 
 def part1(input: str):
-    num_easy_digits = 0
-    for _, output_value in parse(input):
-        for digit in output_value:
-            if len(digit) in (2, 3, 4, 7):
-                num_easy_digits += 1
-    return num_easy_digits
+    return sum(
+        [
+            1 if len(digit) in (2, 3, 4, 7) else 0
+            for _, output_value in parse(input)
+            for digit in output_value
+        ]
+    )
 
 
 def part2(input: str):
