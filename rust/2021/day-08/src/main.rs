@@ -38,20 +38,12 @@ fn parse(input: &str) -> Vec<Entry> {
 
 fn part1(input: &str) -> u64 {
     let entries = parse(input);
-    let unique_segment_lengths: HashSet<usize> = [2, 3, 4, 7].into_iter().collect();
+    let unique_segment_lengths: HashSet<_> = [2, 3, 4, 7].into_iter().collect();
     entries
         .iter()
-        .map(|entry| {
-            entry.output_value.map(|digit| {
-                if unique_segment_lengths.contains(&digit.len()) {
-                    1
-                } else {
-                    0
-                }
-            })
-        })
-        .flatten()
-        .sum()
+        .flat_map(|entry| entry.output_value.iter())
+        .filter(|digit| unique_segment_lengths.contains(&digit.len()))
+        .count() as u64
 }
 
 fn part2(input: &str) -> u64 {
