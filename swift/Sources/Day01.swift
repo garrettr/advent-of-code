@@ -1,34 +1,29 @@
-import Algorithms
 import Foundation
 
 struct Day01: AdventDay {
   var data: String
 
-  var entities: [String] {
+  var lines: [String] {
       data.components(separatedBy: .newlines)
   }
 
   func part1() -> Any {
-      entities.map {
-          let digits = $0.filter { $0.isWholeNumber }
-          return Int(String([digits.first!, digits.last!]))!
+      lines.map { line in
+          let digits = line.compactMap { $0.wholeNumberValue }
+          return digits.first! * 10 + digits.last!
       }.reduce(0, +)
   }
 
   func part2() -> Any {
       let digitWords = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-      return entities.map {
-          var digits: [Int] = []
-          for index in $0.indices {
-              if $0[index].isWholeNumber {
-                  digits.append($0[index].wholeNumberValue!)
+      return lines.map { line in
+          let digits = line.indices.compactMap { index in
+              if line[index].isWholeNumber {
+                  line[index].wholeNumberValue!
+              } else if let (wordIndex, _) = digitWords.enumerated().first(where: { line[index...].hasPrefix($1)}) {
+                  wordIndex + 1
               } else {
-                  for (wordIndex, word) in digitWords.enumerated() {
-                      if $0[index...].hasPrefix(word) {
-                          digits.append(wordIndex + 1)
-                          break;
-                      }
-                  }
+                  nil
               }
           }
           return digits.first! * 10 + digits.last!
