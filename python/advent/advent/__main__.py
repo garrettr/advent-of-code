@@ -5,7 +5,7 @@ import subprocess
 import sys
 from datetime import date
 
-from .puzzle import challenges_path, challenge_path
+from .puzzle import get_challenges_path, get_challenge_path
 from .website import download_puzzle_input
 
 
@@ -17,70 +17,83 @@ def get_current_puzzle() -> tuple[int, int]:
     return year, day
 
 
-def do_language_specific_setup(language: str, year: int, day: int, path):
-    match language:
-        case "python":
-            # Create challenge directory.
-            path.mkdir(parents=True)
+def setup_python(year: int, day: int, challenge_path: str):
+    # Create challenge directory.
+    challenge_path.mkdir(parents=True)
 
-            # Copy template file, substituting the current year and day.
-            with open(challenges_path(language) / "template.py") as f:
-                template = f.read()
-            template = template.replace("YEAR = 2023", f"YEAR = {year}")
-            template = template.replace("DAY = 1", f"DAY = {day}")
-            template = template.replace("TestDay", f"TestDay{day}")
-            solution_src = path / f"day{day:02d}.py"
-            with open(solution_src, "w") as f:
-                f.write(template)
-            solution_src.chmod(0o755)
+    # Copy template file, substituting the current year and day.
+    with open(get_challenges_path("python") / "template.py") as f:
+        template = f.read()
+        template = template.replace("YEAR = 2023", f"YEAR = {year}")
+        template = template.replace("DAY = 1", f"DAY = {day}")
+        template = template.replace("TestDay", f"TestDay{day}")
+        solution_src = challenge_path / f"day{day:02d}.py"
+        with open(solution_src, "w") as f:
+            f.write(template)
+        solution_src.chmod(0o755)
 
-        case "rust":
-            # Create parent directory (`rust/<year>`).
-            try:
-                path.parent.mkdir(parents=True)
-            except FileExistsError:
-                pass
 
-            # Create challenge directory and boilerplate binary package with Cargo.
-            try:
-                subprocess.run(
-                    ["cargo", "new", path.name],
-                    capture_output=True,
-                    check=True,
-                    cwd=path.parent,
-                )
-            except subprocess.CalledProcessError as e:
-                print(e.stderr.decode("utf-8"))
-                raise
+def setup_rust(year: int, day: int, challenge_path: str):
+    # Create parent directory (`rust/<year>`).
+    try:
+        challenge_path.parent.mkdir(parents=True)
+    except FileExistsError:
+        pass
 
-            # Copy template file.
-            shutil.copyfile(
-                challenges_path(language) / "template.rs", path / "src" / "main.rs"
-            )
+    # Create challenge directory and boilerplate binary package with Cargo.
+    try:
+        subprocess.run(
+            ["cargo", "new", challenge_path.name],
+            capture_output=True,
+            check=True,
+            cwd=challenge_path.parent,
+        )
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode("utf-8"))
+        raise
+
+    # Copy template file.
+    shutil.copyfile(
+        get_challenges_path("rust") / "template.rs",
+        challenge_path / "src" / "main.rs"
+    )
+
+
+def do_language_specific_setup(language: str, year: int, day: int, challenge_path: str):
+    if language == "python":
+        setup = setup_python
+    elif language == "rust":
+        setup = setup_rust
+    else:
+        raise RuntimeError(f"Unsupported language: {language}")
+    setup(year, day, challenge_path)
 
 
 def new(language: str, year: int, day: int):
     """Prepare for a new day's challenge."""
-    path = challenges_path(language)
-    if not path.exists():
-        res = input(f"Challenges directory {path} does not exist, create it? (y/n) ")
+    challenges_path = get_challenges_path(language)
+    if not challenges_path.exists():
+        res = input(f"Challenges directory {challenges_path} does not exist, create it? (y/n) ")
         if res.lower() == "y":
-            path.mkdir(parents=True)
+            challenges_path.mkdir(parents=True)
         else:
             return
 
-    path = challenge_path(language, year, day)
-    if path.exists():
-        res = input(f"Challenge directory {path} already exists, replace it? (y/n) ")
+    challenge_path = get_challenge_path(language, year, day)
+    if challenge_path.exists():
+        res = input(f"Challenge directory {challenge_path} already exists, replace it? (y/n) ")
         if res.lower() == "y":
-            shutil.rmtree(path)
+            shutil.rmtree(challenge_path)
         else:
             return
 
-    do_language_specific_setup(language, year, day, path)
+    do_language_specific_setup(language, year, day, challenge_path)
 
+    if language == "rust":
+        input_dir = challenge_path / "src"
+    else:
+        input_dir = challenge_path
     puzzle_input = download_puzzle_input(year, day)
-    input_dir = path / "src" if language == "rust" else path
     with open(input_dir / "input.txt", "w") as f:
         f.write(puzzle_input)
 

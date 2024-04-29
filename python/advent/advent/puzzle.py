@@ -17,22 +17,21 @@ def repo_root():
     return pathlib.Path(result.stdout.decode("utf-8").strip())
 
 
-def challenges_path(language: str) -> pathlib.Path:
+def get_challenges_path(language: str) -> pathlib.Path:
     """Return the path to the subdirectory of solutions to challenges written in `language`."""
     return repo_root() / language
 
 
-def challenge_path(language: str, year: int, day: int):
+def get_challenge_path(language: str, year: int, day: int):
     """Return the path to the subdirectory containing the solution for a specific challenge."""
     if language == "rust":
         day_dir = f"day-{day:02d}"
     else:
         day_dir = f"{day:02d}"
-    return challenges_path(language) / str(year) / day_dir
+    return get_challenges_path(language) / str(year) / day_dir
 
 
 def get_puzzle_input(year: int, day: int, filename="input.txt") -> str:
     """Get the puzzle input for the given year and day."""
-    path = challenge_path("python", year, day)
-    with open(path / filename) as f:
+    with open(get_challenge_path("python", year, day) / filename) as f:
         return f.read()
