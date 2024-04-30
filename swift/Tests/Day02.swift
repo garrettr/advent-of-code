@@ -11,7 +11,7 @@ final class Day02Tests: XCTestCase {
     Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
     """
 
-    func testGame() {
+    func testGameInit() {
         let description = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green";
         let expected = Game(
             id: 1,
@@ -21,7 +21,35 @@ final class Day02Tests: XCTestCase {
                 ["green": 2],
             ]
         )
-        XCTAssertEqual(Game(fromDescription: description)!, expected);
+        XCTAssertEqual(try! Game(fromDescription: description), expected);
+    }
+
+    func testGameInitWithInvalidFormat() {
+        let invalidDescription = "Game: 1: 1 red, 2 green; 3 blue"
+        XCTAssertThrowsError(try Game(fromDescription: invalidDescription)) { error in
+            XCTAssertEqual(error as? Game.InitializationError, Game.InitializationError.invalidFormat(invalidDescription))
+        }
+    }
+
+    func testGameInitWithInvalidGameID() {
+        let invalidDescription = "Game foo: 1 red, 2 green; 3 blue"
+        XCTAssertThrowsError(try Game(fromDescription: invalidDescription)) { error in
+            XCTAssertEqual(error as? Game.InitializationError, Game.InitializationError.invalidGameID("Game foo"))
+        }
+    }
+
+    func testGameInitWithInvalidRoundFormat() {
+        let invalidDescription = "Game 1: 1 red 2, 2 green; 3 blue"
+        XCTAssertThrowsError(try Game(fromDescription: invalidDescription)) { error in
+            XCTAssertEqual(error as? Game.InitializationError, Game.InitializationError.invalidRoundFormat("1 red 2"))
+        }
+    }
+
+    func testGameInitWithInvalidCubeCount() {
+        let invalidDescription = "Game 1: 1 red, 2 green; foo blue"
+        XCTAssertThrowsError(try Game(fromDescription: invalidDescription)) { error in
+            XCTAssertEqual(error as? Game.InitializationError, Game.InitializationError.invalidCubeCount("foo"))
+        }
     }
 
     func testPart1() throws {

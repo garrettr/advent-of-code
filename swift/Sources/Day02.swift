@@ -16,27 +16,40 @@ struct Game: Equatable {
 // custom initializers in an extension rather than as part of the value type’s original implementation.
 // - https://docs.swift.org/swift-book/documentation/the-swift-programming-language/initialization/
 extension Game {
-    init?(fromDescription description: String) {
+    enum InitializationError: Error, Equatable {
+        case invalidFormat(String)
+        case invalidGameID(String)
+        case invalidRoundFormat(String)
+        case invalidCubeCount(String)
+        case emptyRounds(String)
+    }
+
+    init?(fromDescription description: String) throws {
         let components = description.components(separatedBy: ": ")
-        guard components.count == 2,
-                let id = Int(components[0].components(separatedBy: " ")[1]) else {
-            return nil
+        guard components.count == 2 else {
+            throw InitializationError.invalidFormat(description)
         }
 
-        let rounds = components[1].components(separatedBy: "; ").compactMap { roundDescription -> [String: Int]? in
+        guard let id = Int(components[0].components(separatedBy: " ")[1]) else {
+            throw InitializationError.invalidGameID(components[0])
+        }
+
+        let rounds = try components[1].components(separatedBy: "; ").map { roundDescription -> [String: Int] in
             let roundComponents = roundDescription.components(separatedBy: ", ")
-            return Dictionary(uniqueKeysWithValues: roundComponents.compactMap { setofCubesDescription -> (String, Int)? in
+            return try Dictionary(uniqueKeysWithValues: roundComponents.map { setofCubesDescription -> (String, Int) in
                 let setOfCubesComponents = setofCubesDescription.components(separatedBy: " ")
-                guard setOfCubesComponents.count == 2,
-                      let count = Int(setOfCubesComponents[0]) else {
-                    return nil
+                guard setOfCubesComponents.count == 2 else {
+                    throw InitializationError.invalidRoundFormat(setofCubesDescription)
+                }
+                guard let count = Int(setOfCubesComponents[0]) else {
+                    throw InitializationError.invalidCubeCount(setOfCubesComponents[0])
                 }
                 return (setOfCubesComponents[1], count)
             })
         }
 
         guard !rounds.isEmpty else {
-            return nil
+            throw InitializationError.emptyRounds(description)
         }
 
         self.id = id
@@ -48,7 +61,7 @@ struct Day02: AdventDay {
     var data: String
 
     var games: [Game] {
-        data.components(separatedBy: .newlines).compactMap { Game(fromDescription: $0) }
+        data.components(separatedBy: .newlines).compactMap { try? Game(fromDescription: $0) }
     }
 
     func part1() -> Any {
