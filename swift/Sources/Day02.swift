@@ -51,7 +51,7 @@ extension Game {
         guard !rounds.isEmpty else {
             throw InitializationError.emptyRounds(description)
         }
-
+        
         self.id = id
         self.rounds = rounds
     }
@@ -66,21 +66,18 @@ struct Day02: AdventDay {
 
     func part1() -> Any {
         games.filter { $0.isPossible(withBag: ["red": 12, "green": 13, "blue": 14]) }
-             .map(\.id)
-             .reduce(0, +)
+            .map(\.id)
+            .reduce(0, +)
     }
 
-      func part2() -> Any {
-          games.map { game in
-              var colors = ["red": 0, "green": 0, "blue": 0]
-              for round in game.rounds {
-                  for (color, count) in round {
-                      if colors[color]! < count {
-                          colors[color] = count
-                      }
-                  }
-              }
-              return colors.values.reduce(1, *)
-          }.reduce(0, +)
-      }
+    func part2() -> Any {
+        games.reduce(0) { result, game in
+            let maxCounts = game.rounds.reduce(into: ["red": 0, "green": 0, "blue": 0]) { maxCounts, round in
+                for (color, count) in round {
+                    maxCounts[color] = max(maxCounts[color, default: 0], count)
+                }
+            }
+            return result + maxCounts.values.reduce(1, *)
+        }
+    }
 }
