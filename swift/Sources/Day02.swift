@@ -2,15 +2,12 @@ struct Game: Equatable {
     let id: Int
     let rounds: [[String: Int]]
 
-    func possible(withBag bag: [String: Int]) -> Bool {
-        for round in rounds {
-            for (color, count) in round {
-                if count > bag[color]! {
-                    return false
-                }
+    func isPossible(withBag bag: [String: Int]) -> Bool {
+        rounds.allSatisfy { round in
+            round.allSatisfy { (color, count) in
+                bag[color, default: 0] >= count
             }
         }
-        return true
     }
 }
 
@@ -21,27 +18,25 @@ struct Game: Equatable {
 extension Game {
     init?(fromDescription description: String) {
         let components = description.components(separatedBy: ": ")
-
-        guard components.count == 2 else {
+        guard components.count == 2,
+                let id = Int(components[0].components(separatedBy: " ")[1]) else {
             return nil
         }
 
-        guard let id = Int(components[0].components(separatedBy: " ")[1]) else {
-            return nil
-        }
-
-        var rounds: [[String: Int]] = []
-        for round_description in components[1].components(separatedBy: "; ") {
-            var round: [String: Int] = [:]
-            for set_of_cubes_description in round_description.components(separatedBy: ", ") {
-                let set_of_cubes_components = set_of_cubes_description.components(separatedBy: " ")
-                guard let count = Int(set_of_cubes_components[0]) else {
+        let rounds = components[1].components(separatedBy: "; ").compactMap { roundDescription -> [String: Int]? in
+            let roundComponents = roundDescription.components(separatedBy: ", ")
+            return Dictionary(uniqueKeysWithValues: roundComponents.compactMap { setofCubesDescription -> (String, Int)? in
+                let setOfCubesComponents = setofCubesDescription.components(separatedBy: " ")
+                guard setOfCubesComponents.count == 2,
+                      let count = Int(setOfCubesComponents[0]) else {
                     return nil
                 }
-                let color = set_of_cubes_components[1]
-                round[color] = count
-            }
-            rounds.append(round)
+                return (setOfCubesComponents[1], count)
+            })
+        }
+
+        guard !rounds.isEmpty else {
+            return nil
         }
 
         self.id = id
@@ -52,18 +47,14 @@ extension Game {
 struct Day02: AdventDay {
     var data: String
 
-    var lines: [String] {
-        data.components(separatedBy: .newlines)
-    }
-
     var games: [Game] {
-        lines.compactMap { Game(fromDescription: $0) }
+        data.components(separatedBy: .newlines).compactMap { Game(fromDescription: $0) }
     }
 
     func part1() -> Any {
-        games.filter {
-            $0.possible(withBag: ["red": 12, "green": 13, "blue": 14])
-        }.map { $0.id }.reduce(0, +)
+        games.filter { $0.isPossible(withBag: ["red": 12, "green": 13, "blue": 14]) }
+             .map(\.id)
+             .reduce(0, +)
     }
 
     //  func part2() -> Any {
