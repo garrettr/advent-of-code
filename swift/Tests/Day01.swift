@@ -2,8 +2,6 @@ import XCTest
 
 @testable import AdventOfCode
 
-// Make a copy of this file for every day to ensure the provided smoke tests
-// pass.
 final class Day01Tests: XCTestCase {
   func testPart1() throws {
     let challenge = Day01(data: """
