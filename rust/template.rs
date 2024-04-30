@@ -1,11 +1,11 @@
 const EXAMPLE: &str = include_str!("example.txt");
 const INPUT: &str = include_str!("input.txt");
 
-fn part1(input: &str) -> u32 {
+fn part1(input: &str) -> u64 {
     0
 }
 
-fn part2(input: &str) -> u32 {
+fn part2(input: &str) -> u64 {
     0
 }
 
