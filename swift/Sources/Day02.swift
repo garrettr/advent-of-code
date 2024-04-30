@@ -70,7 +70,17 @@ struct Day02: AdventDay {
              .reduce(0, +)
     }
 
-    //  func part2() -> Any {
-    //      0
-    //  }
+      func part2() -> Any {
+          games.map { game in
+              var colors = ["red": 0, "green": 0, "blue": 0]
+              for round in game.rounds {
+                  for (color, count) in round {
+                      if colors[color]! < count {
+                          colors[color] = count
+                      }
+                  }
+              }
+              return colors.values.reduce(1, *)
+          }.reduce(0, +)
+      }
 }
