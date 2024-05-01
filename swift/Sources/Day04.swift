@@ -34,7 +34,8 @@ extension Card {
             throw InitializationError.invalidFormat(description)
         }
 
-        guard let id = Int(components[0].split(separator: " ", omittingEmptySubsequences: true)[1]) else {
+        let idComponents = components[0].split(separator: " ", omittingEmptySubsequences: true)
+        guard idComponents.count == 2, let id = Int(idComponents[1]) else {
             throw InitializationError.invalidCardID(components[0])
         }
 
@@ -43,12 +44,10 @@ extension Card {
             throw InitializationError.invalidNumbers(components[1])
         }
 
-        let winningNumbers = numbersLists[0].components(separatedBy: .whitespaces).compactMap { Int($0) }
-        let numbers = numbersLists[1].components(separatedBy: .whitespaces).compactMap { Int($0) }
+        let winningNumbers = Set(numbersLists[0].split(separator: " ").compactMap { Int($0) })
+        let numbers = Set(numbersLists[1].split(separator: " ").compactMap { Int($0) })
 
-        self.id = id
-        self.winningNumbers = Set(winningNumbers)
-        self.numbers = Set(numbers)
+        self.init(id: id, winningNumbers: winningNumbers, numbers: numbers)
     }
 }
 
@@ -57,22 +56,21 @@ struct Day04: AdventDay {
 
     var cards: [Card] {
         data.trimmingCharacters(in: .newlines)
-            .components(separatedBy: .newlines)
+            .split(separator: "\n")
             .compactMap {
                 do {
-                    let card = try Card(fromDescription: $0)
-                    return card
+                    return try Card(fromDescription: String($0))
                 } catch {
-                    print("\(error)")
+                    print("Initialization failed: \(error)")
+                    return nil
                 }
-                return nil
             }
     }
 
     func part1() -> Any {
         cards.map(\.winners.count)
              .filter { $0 > 0 }
-             .map { pow(2, $0 - 1)}
+             .map { 1 << ($0 - 1) }
              .reduce(0, +)
     }
 
