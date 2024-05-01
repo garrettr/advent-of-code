@@ -76,7 +76,13 @@ struct Day04: AdventDay {
              .reduce(0, +)
     }
 
-//    func part2() -> Any {
-//        0
-//    }
+    func part2() -> Any {
+        var cardCounts = Array(repeating: 1, count: cards.count)
+        for (i, card) in cards.enumerated() {
+            for j in 0..<card.winners.count {
+                cardCounts[i + j + 1] += cardCounts[i]
+            }
+        }
+        return cardCounts.reduce(0, +)
+    }
 }
