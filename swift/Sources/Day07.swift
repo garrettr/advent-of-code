@@ -1,39 +1,30 @@
 import Foundation
 
-enum CamelCard: Comparable {
-    case Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace
+enum CamelCard: Int, Comparable {
+    case two = 2, three, four, five, six, seven, eight, nine, ten
+    case jack, queen, king, ace
 
     init?(character: Character) {
         switch character {
-        case "2":
-            self = .Two
-        case "3":
-            self = .Three
-        case "4":
-            self = .Four
-        case "5":
-            self = .Five
-        case "6":
-            self = .Six
-        case "7":
-            self = .Seven
-        case "8":
-            self = .Eight
-        case "9":
-            self = .Nine
+        case "2"..."9":
+            self.init(rawValue: Int(String(character))!)
         case "T":
-            self = .Ten
+            self = .ten
         case "J":
-            self = .Jack
+            self = .jack
         case "Q":
-            self = .Queen
+            self = .queen
         case "K":
-            self = .King
+            self = .king
         case "A":
-            self = .Ace
+            self = .ace
         default:
             return nil
         }
+    }
+
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.rawValue < rhs.rawValue
     }
 }
 
@@ -42,32 +33,27 @@ struct Hand {
     let bid: Int
 
     enum Type_: Comparable {
-        case HighCard, OnePair, TwoPair, ThreeOfAKind, FullHouse, FourOfAKind, FiveOfAKind
+        case highCard, onePair, twoPair, threeOfAKind, fullHouse, fourOfAKind, fiveOfAKind
     }
 
     var type: Type_ {
-        var counter: [CamelCard: Int] = [:]
-        for card in cards {
-            counter[card, default: 0] += 1
+        let counter = Dictionary(grouping: cards, by: { $0 }).mapValues { $0.count }
+        switch Array(counter.values).sorted(by: >) {
+        case [5]:
+            return .fiveOfAKind
+        case [4, 1]:
+            return .fourOfAKind
+        case [3, 2]:
+            return .fullHouse
+        case [3, 1, 1]:
+            return .threeOfAKind
+        case [2, 2, 1]:
+            return .twoPair
+        case [2, 1, 1, 1]:
+            return .onePair
+        default:
+            return .highCard
         }
-        if counter.count == 1 {
-            return .FiveOfAKind
-        } else if counter.count == 2 {
-            if Set(counter.values) == Set([4, 1]) {
-                return .FourOfAKind
-            } else {
-                return .FullHouse
-            }
-        } else if counter.count == 3 {
-            if Set(counter.values) == Set([3, 1, 1]) {
-                return .ThreeOfAKind
-            } else {
-                return .TwoPair
-            }
-        } else if counter.count == 4 {
-            return .OnePair
-        }
-        return .HighCard
     }
 }
 
@@ -89,23 +75,24 @@ struct Day07: AdventDay {
     var hands: [Hand] {
         data.trimmingCharacters(in: .newlines)
             .split(separator: "\n")
-            .compactMap { Hand(fromString: String($0))! }
+            .map { Hand(fromString: String($0))! }
     }
 
     func part1() -> Any {
-        hands.sorted { a, b -> Bool in
-            if a.type == b.type {
-                for (aCard, bCard) in zip(a.cards, b.cards) {
-                    if aCard == bCard {
+        hands.sorted { lhs, rhs -> Bool in
+            if lhs.type == rhs.type {
+                for (lhsCard, rhsCard) in zip(lhs.cards, rhs.cards) {
+                    if lhsCard == rhsCard {
                         continue
                     }
-                    return aCard < bCard
+                    return lhsCard < rhsCard
                 }
             }
-            return a.type < b.type
-        }.enumerated().map { i, hand in
-            hand.bid * (i + 1)
-        }.reduce(0, +)
+            return lhs.type < rhs.type
+        }
+        .enumerated()
+        .map { index, hand in hand.bid * (index + 1) }
+        .reduce(0, +)
     }
 
 //    func part2() -> Any {
