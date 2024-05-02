@@ -16,8 +16,8 @@ final class Day07Tests: XCTestCase {
         XCTAssertEqual(String(describing: challenge.part1()), "6440")
     }
 
-//    func testPart2() throws {
-//        let challenge = Day07(data: testData)
-//        XCTAssertEqual(String(describing: challenge.part2()), "30")
-//    }
+    func testPart2() throws {
+        let challenge = Day07(data: testData)
+        XCTAssertEqual(String(describing: challenge.part2()), "5905")
+    }
 }
