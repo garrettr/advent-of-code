@@ -80,15 +80,11 @@ struct Day07: AdventDay {
 
     func part1() -> Any {
         hands.sorted { lhs, rhs -> Bool in
-            if lhs.type == rhs.type {
-                for (lhsCard, rhsCard) in zip(lhs.cards, rhs.cards) {
-                    if lhsCard == rhsCard {
-                        continue
-                    }
-                    return lhsCard < rhsCard
-                }
+            if lhs.type != rhs.type {
+                lhs.type < rhs.type
+            } else {
+                lhs.cards.lexicographicallyPrecedes(rhs.cards)
             }
-            return lhs.type < rhs.type
         }
         .enumerated()
         .map { index, hand in hand.bid * (index + 1) }
