@@ -12,11 +12,7 @@ enum CamelCard: Int, Comparable {
         case "T":
             self = .ten
         case "J":
-            if jokersWild {
-                self = .joker
-            } else {
-                self = .jack
-            }
+            self = jokersWild ? .joker : .jack
         case "Q":
             self = .queen
         case "K":
@@ -38,24 +34,16 @@ struct Hand {
     let bid: Int
     let jokersWild: Bool
 
-    enum Type_: Comparable {
+    enum HandType: Comparable {
         case highCard, onePair, twoPair, threeOfAKind, fullHouse, fourOfAKind, fiveOfAKind
     }
 
-    var type: Type_ {
+    var type: HandType {
         var counter = Dictionary(grouping: cards, by: { $0 }).mapValues { $0.count }
 
-        let jokersCount = counter[.joker, default: 0]
-        if jokersWild && jokersCount > 0 {
-            counter.removeValue(forKey: .joker)
-            if jokersCount == cards.count {
-                // If all the cards are jokers, they all become aces.
-                counter[.ace] = jokersCount
-            } else {
-                // Otherwise, jokers should become more of the most common card in the hand.
-                let mostCommonCard = counter.max(by: { $0.value < $1.value })!.key
-                counter[mostCommonCard]! += jokersCount
-            }
+        if jokersWild, let jokersCount = counter.removeValue(forKey: .joker) {
+            let mostCommonCard = counter.max(by: { $0.value < $1.value })?.key ?? .ace
+            counter[mostCommonCard, default: 0] += jokersCount
         }
 
         switch Array(counter.values).sorted(by: >) {
@@ -96,12 +84,8 @@ struct Day07: AdventDay {
         data.trimmingCharacters(in: .newlines).split(separator: "\n")
     }
 
-    var hands: [Hand] {
-        lines.map { Hand(fromString: String($0))! }
-    }
-
-    var handsWithJokersWild: [Hand] {
-        lines.map { Hand(fromString: String($0), withJokersWild: true)! }
+    func hands(withJokersWild jokersWild: Bool) -> [Hand] {
+        lines.map { Hand(fromString: String($0), withJokersWild: jokersWild)! }
     }
 
     func calculateWinnings(withHands hands: [Hand]) -> Int {
@@ -118,10 +102,10 @@ struct Day07: AdventDay {
     }
 
     func part1() -> Any {
-        calculateWinnings(withHands: hands)
+        calculateWinnings(withHands: hands(withJokersWild: false))
     }
 
     func part2() -> Any {
-        calculateWinnings(withHands: handsWithJokersWild)
+        calculateWinnings(withHands: hands(withJokersWild: true))
     }
 }
