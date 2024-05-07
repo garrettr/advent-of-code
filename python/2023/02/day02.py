@@ -9,37 +9,36 @@ from advent import get_puzzle_input
 YEAR = 2023
 DAY = 2
 
+Game = dict[str, int]
 
-def parse(input: str):
+def parse(input: str) -> list[Game]:
     games = []
     for line in input.splitlines():
-        game = {}
+        game: Game = {}
         handfuls = line.split(": ")[1].split("; ")
         for handful in handfuls:
             for pick in handful.split(", "):
                 n, color = pick.split()
-                n = int(n)
-                if (color not in game) or (color in game and game[color] < n):
-                    game[color] = n
+                count = int(n)
+                if color not in game or game[color] < count:
+                    game[color] = count
         games.append(game)
     return games
 
 
-def is_game_possible(game, totals):
-    return all(color in totals and totals[color] >= n for color, n in game.items())
+def is_game_possible(game: Game, totals: Game) -> bool:
+    return all(totals.get(color, 0) >= n for color, n in game.items())
 
 
-def part1(input: str):
+def part1(input: str) -> int:
     games = parse(input)
     totals = {"red": 12, "green": 13, "blue": 14}
-    return sum(
-        [i + 1 for i, game in enumerate(games) if is_game_possible(game, totals)]
-    )
+    return sum(i + 1 for i, game in enumerate(games) if is_game_possible(game, totals))
 
 
-def part2(input: str):
+def part2(input: str) -> int:
     games = parse(input)
-    return sum([reduce(mul, game.values()) for game in games])
+    return sum(reduce(mul, game.values()) for game in games)
 
 
 class TestDay02(unittest.TestCase):

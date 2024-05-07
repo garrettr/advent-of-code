@@ -61,3 +61,29 @@ variable:
 `advent` will search for `.env` files by traversing up from the
 current working directory. This git repo ignores `.env` files to
 prevent accidentally checking in secrets.
+
+# Type Checking
+
+If you're using a virtualenv, make sure to install `mypy` into the virtualenv:
+
+```sh
+python -m pip install mypy
+```
+
+And run `mypy` from the virtualenv:
+
+```sh
+python -m mypy <file.py>
+```
+
+## TODO
+
+- [ ] `advent` library needs library stubs or py.typed marker, currently every `mypy` invocation is guaranteed to have at least one error, e.g.:
+
+    ```
+    ➜  01 git:(main) ✗ python -m mypy day01.py
+    day01.py:4: error: Skipping analyzing "advent": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+    day01.py:4: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+    Found 1 error in 1 file (checked 1 source file)
+    ```
+

@@ -12,13 +12,14 @@ def calibration_value(line: str) -> int:
     return int(digits[0] + digits[-1])
 
 
-def part1(input):
+def part1(input: str) -> int:
     return sum(calibration_value(line) for line in input.splitlines())
 
 
 def calibration_value2(line: str) -> int:
+    NUMERIC_DIGITS = [str(n) for n in range(1, 10)]
     SPELLED_DIGITS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-    DIGITS = SPELLED_DIGITS + [str(i+1) for i in range(len(SPELLED_DIGITS))]
+    DIGITS = NUMERIC_DIGITS + SPELLED_DIGITS
 
     first = last = None
     for i in range(len(line)):
@@ -39,7 +40,7 @@ def calibration_value2(line: str) -> int:
     return 10 * digit_value(first) + digit_value(last)
 
 
-def part2(input):
+def part2(input: str) -> int:
     return sum(calibration_value2(line) for line in input.splitlines())
 
 
