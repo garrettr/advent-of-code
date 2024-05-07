@@ -1,16 +1,22 @@
 # Setup
 
 1. Enter your Python environment of choice (e.g. global, virtualenv, conda). I'm using `venv`:
+
     ```sh
     $ python3 -m venv .venv
     $ source .venv/bin/activate
     ```
+
 2. Install `advent` as an editable package:
+
     ```sh
     $ pip install -e ./advent
     ```
+
 3. If using `zsh` without [automatic rehashing](https://superuser.com/questions/1089949/zsh-autocompletion-for-a-fresh-executable-in-path) enabled, run `rehash` so `zsh` picks up the scripts defined by the Python package's `project.scripts` in `pyproject.toml`.
+
 4. Confirm it worked:
+
     ```sh
     $ python -c "import advent" && echo "OK"
     OK
@@ -38,6 +44,7 @@ environment variable. There are two ways you can set the environment
 variable:
 
 1. With your shell. For example, in zsh:
+
     ```sh
     # Consider taking precautions to prevent your session cookie from being saved in your shell history.
     $ setopt HIST_IGNORE_SPACE
@@ -46,6 +53,7 @@ variable:
     ```
 
 2. In a `.env` file.
+
     ```sh
     $ echo 'SESSION_ID="<YOUR SESSION ID>"' > .env
     ```
