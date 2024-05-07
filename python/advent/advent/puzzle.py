@@ -59,7 +59,6 @@ class Puzzle:
 
     INPUT_FILENAME = "input.txt"
 
-    @property
     def input(self, filename=INPUT_FILENAME):
         "Get the contents of a file in the puzzle's inputs directory."
         with open(self.inputs_dir / filename) as f:
@@ -136,4 +135,6 @@ class Puzzle:
 
 def get_puzzle_input(year: int, day: int, filename=Puzzle.INPUT_FILENAME) -> str:
     """Helper function for Python solutions that gets the puzzle input for the given year and day."""
-    return Puzzle(language.PYTHON, year, day).input(filename)
+    puzzle = Puzzle(Language.PYTHON, year, day)
+    return puzzle.input(filename)
+
