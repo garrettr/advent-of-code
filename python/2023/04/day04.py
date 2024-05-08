@@ -43,9 +43,11 @@ def part1(input: str):
 
 def part2(input: str):
     cards = parse_cards(input)
-    for card in cards:
-        cards.extend(cards[card.id : card.id + card.matches])
-    return len(cards)
+    card_counts = [1] * len(cards)
+    for i, card in enumerate(cards):
+        for j in range(0, card.matches):
+            card_counts[i + j + 1] += card_counts[i]
+    return sum(card_counts)
 
 
 class TestDay04(unittest.TestCase):
