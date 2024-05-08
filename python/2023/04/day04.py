@@ -1,7 +1,12 @@
+#!/usr/bin/env python3
 from dataclasses import dataclass
 from pprint import pprint
+import unittest
 
 from advent import get_puzzle_input
+
+YEAR = 2023
+DAY = 4
 
 
 @dataclass
@@ -23,6 +28,7 @@ class ScratchCard:
     def matches(self) -> int:
         return len(self.winning_numbers & self.numbers_you_have)
 
+    @property
     def score(self) -> int:
         return 2 ** (self.matches - 1) if self.matches else 0
 
@@ -32,7 +38,7 @@ def parse_cards(input: str) -> list[ScratchCard]:
 
 
 def part1(input: str):
-    return sum(card.score() for card in parse_cards(input))
+    return sum(card.score for card in parse_cards(input))
 
 
 def part2(input: str):
@@ -42,8 +48,19 @@ def part2(input: str):
     return len(cards)
 
 
+class TestDay04(unittest.TestCase):
+    def setUp(self):
+        self.example = get_puzzle_input(YEAR, DAY, "example.txt")
+        self.input = get_puzzle_input(YEAR, DAY)
+
+    def test_part1(self):
+        self.assertEqual(part1(self.example), 13)
+        self.assertEqual(part1(self.input), 21919)
+
+    def test_part2(self):
+        self.assertEqual(part2(self.example), 30)
+        self.assertEqual(part2(self.input), 9881048)
+
+
 if __name__ == "__main__":
-    example = get_puzzle_input(2023, 4, "example.txt")
-    input = get_puzzle_input(2023, 4)
-    print(part1(input))
-    print(part2(input))
+    unittest.main()
