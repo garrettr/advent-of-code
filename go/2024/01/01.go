@@ -79,6 +79,19 @@ func solvePart1(left []int, right []int) (totalDistance int) {
 	return
 }
 
+func solvePart2(left []int, right []int) (similarityScore int) {
+	rightFreqs := make(map[int]int)
+	for _, n := range right {
+		// If key is not in the map, then v is the zero value for the map's element type.
+		v := rightFreqs[n]
+		rightFreqs[n] = v + 1
+	}
+	for _, n := range left {
+		similarityScore += n * rightFreqs[n]
+	}
+	return
+}
+
 func main() {
 	input := getInput("input.txt")
 
@@ -89,4 +102,7 @@ func main() {
 
 	solution1 := solvePart1(left, right)
 	fmt.Println(solution1)
+
+	solution2 := solvePart2(left, right)
+	fmt.Println(solution2)
 }

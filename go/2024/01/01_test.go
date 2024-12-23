@@ -48,3 +48,23 @@ func TestSolvePart1(t *testing.T) {
 		}
 	}
 }
+
+func TestSolvePart2(t *testing.T) {
+	input := getInput("input.txt")
+	testCases := map[string]int{
+		example: 31,
+		input:   18567089,
+	}
+
+	for testCase, wantSolution := range testCases {
+		left, right, err := parseInput(testCase)
+		if err != nil {
+			t.Fatalf("got err %v, want nil", err)
+		}
+
+		solution := solvePart2(left, right)
+		if solution != wantSolution {
+			t.Fatalf("got solution %v, want %v", solution, wantSolution)
+		}
+	}
+}
