@@ -29,14 +29,14 @@ func TestParseInput(t *testing.T) {
 	}
 }
 
-func TestSolve(t *testing.T) {
+func TestSolvePart1(t *testing.T) {
 	left, right, err := parseInput(example)
 	if err != nil {
 		t.Fatalf("got err %v, want nil", err)
 	}
 
 	wantSolution := 11
-	solution := solve(left, right)
+	solution := solvePart1(left, right)
 	if solution != wantSolution {
 		t.Fatalf("got solution %v, want %v", solution, wantSolution)
 	}

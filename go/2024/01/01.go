@@ -60,7 +60,7 @@ func abs(x int) int {
 	return x
 }
 
-func solve(left []int, right []int) (totalDistance int) {
+func solvePart1(left []int, right []int) (totalDistance int) {
 	// Sort each slice
 	sort.Ints(left)
 	sort.Ints(right)
@@ -83,6 +83,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	solution := solve(left, right)
-	fmt.Println(solution)
+	solution1 := solvePart1(left, right)
+	fmt.Println(solution1)
 }
