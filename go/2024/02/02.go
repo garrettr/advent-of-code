@@ -16,6 +16,8 @@ func getInput(fname string) string {
 	return string(bytes[:])
 }
 
+// parseInput converts a string of space-separated numbers into a slice of integer slices.
+// Each line in the input becomes a slice of integers.
 func parseInput(input string) ([][]int, error) {
 	lines := strings.Split(strings.TrimSpace(input), "\n")
 	parsed := make([][]int, len(lines))
@@ -42,40 +44,51 @@ func abs(x int) int {
 }
 
 const (
+	minValidDiff = 1
+	maxValidDiff = 3
+
 	increasing = iota
 	decreasing
 )
 
+// solvePart1 counts the number of "safe" level sequences based on difference rules.
+// A sequence is safe if consecutive differences are between 1 and 3 (inclusive) and
+// maintain the same trend (increasing or decreasing) throughout.
 func solvePart1(input [][]int) (nSafeLevels int) {
 	for _, report := range input {
+		if len(report) < 2 {
+			log.Fatalf("want report with len >= 2, got %v", report)
+		}
+
 		trend := increasing
 		if report[0] > report[1] {
 			trend = decreasing
 		}
 
-		validDiff := func(diff int) bool {
-			if diff < 0 && trend == increasing {
+		isValidDiff := func(diff int) bool {
+			switch {
+			case diff < 0 && trend == increasing:
 				return false
-			}
-			if diff > 0 && trend == decreasing {
+			case diff > 0 && trend == decreasing:
 				return false
-			}
-			if abs(diff) < 1 || abs(diff) > 3 {
+			case abs(diff) < minValidDiff || abs(diff) > maxValidDiff:
 				return false
 			}
 			return true
 		}
 
-		for i := range report[1:] {
-			if !validDiff(report[i+1] - report[i]) {
+		valid := true
+		for i := 1; i < len(report); i++ {
+			if !isValidDiff(report[i] - report[i-1]) {
+				valid = false
 				break
 			}
-			if i == len(report)-2 {
-				nSafeLevels++
-			}
+		}
+		if valid {
+			nSafeLevels++
 		}
 	}
-	return
+	return nSafeLevels
 }
 
 func main() {

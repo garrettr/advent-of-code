@@ -32,7 +32,8 @@ func TestParseInput(t *testing.T) {
 	}
 }
 
-type solverTestCase struct {
+// TestCase represents a single test scenario for solving puzzle parts
+type TestCase struct {
 	name   string
 	solver func([][]int) int
 	input  string
@@ -41,9 +42,19 @@ type solverTestCase struct {
 
 func TestSolve(t *testing.T) {
 	input := getInput("input.txt")
-	testCases := []solverTestCase{
-		{"Part1_example", solvePart1, example, 2},
-		{"Part1_input", solvePart1, input, 660},
+	testCases := []TestCase{
+		{
+			name:   "Part1_example",
+			solver: solvePart1,
+			input:  example,
+			want:   2,
+		},
+		{
+			name:   "Part1_input",
+			solver: solvePart1,
+			input:  input,
+			want:   660,
+		},
 	}
 
 	for _, tc := range testCases {
