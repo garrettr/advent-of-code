@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -51,44 +52,67 @@ const (
 	decreasing
 )
 
+func isValidDiff(diff int, trend int) bool {
+	switch {
+	case diff < 0 && trend == increasing:
+		return false
+	case diff > 0 && trend == decreasing:
+		return false
+	case abs(diff) < minValidDiff || abs(diff) > maxValidDiff:
+		return false
+	}
+	return true
+}
+
+func isValidReport(report []int) bool {
+	if len(report) < 2 {
+		log.Fatalf("want report with len > 1, got %v", report)
+	}
+
+	trend := increasing
+	if report[0] > report[1] {
+		trend = decreasing
+	}
+
+	valid := true
+	for i := 1; i < len(report); i++ {
+		if !isValidDiff(report[i]-report[i-1], trend) {
+			valid = false
+			break
+		}
+	}
+
+	return valid
+}
+
 // solvePart1 counts the number of "safe" level sequences based on difference rules.
 // A sequence is safe if consecutive differences are between 1 and 3 (inclusive) and
 // maintain the same trend (increasing or decreasing) throughout.
 func solvePart1(input [][]int) (nSafeLevels int) {
 	for _, report := range input {
-		if len(report) < 2 {
-			log.Fatalf("want report with len >= 2, got %v", report)
-		}
-
-		trend := increasing
-		if report[0] > report[1] {
-			trend = decreasing
-		}
-
-		isValidDiff := func(diff int) bool {
-			switch {
-			case diff < 0 && trend == increasing:
-				return false
-			case diff > 0 && trend == decreasing:
-				return false
-			case abs(diff) < minValidDiff || abs(diff) > maxValidDiff:
-				return false
-			}
-			return true
-		}
-
-		valid := true
-		for i := 1; i < len(report); i++ {
-			if !isValidDiff(report[i] - report[i-1]) {
-				valid = false
-				break
-			}
-		}
-		if valid {
+		if isValidReport(report) {
 			nSafeLevels++
 		}
 	}
-	return nSafeLevels
+	return
+}
+
+func solvePart2(input [][]int) (nSafeLevels int) {
+	for _, report := range input {
+		if isValidReport(report) {
+			nSafeLevels++
+			continue
+		}
+
+		for i := 1; i <= len(report); i++ {
+			dampenedReport := slices.Concat(report[:i-1], report[i:])
+			if isValidReport(dampenedReport) {
+				nSafeLevels++
+				break
+			}
+		}
+	}
+	return
 }
 
 func main() {
@@ -101,4 +125,7 @@ func main() {
 
 	solution1 := solvePart1(parsed)
 	fmt.Println(solution1)
+
+	solution2 := solvePart2(parsed)
+	fmt.Println(solution2)
 }

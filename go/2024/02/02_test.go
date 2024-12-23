@@ -43,18 +43,10 @@ type TestCase struct {
 func TestSolve(t *testing.T) {
 	input := getInput("input.txt")
 	testCases := []TestCase{
-		{
-			name:   "Part1_example",
-			solver: solvePart1,
-			input:  example,
-			want:   2,
-		},
-		{
-			name:   "Part1_input",
-			solver: solvePart1,
-			input:  input,
-			want:   660,
-		},
+		{"Part1_example", solvePart1, example, 2},
+		{"Part1_input", solvePart1, input, 660},
+		{"Part2_example", solvePart2, example, 4},
+		{"Part2_input", solvePart2, input, 689},
 	}
 
 	for _, tc := range testCases {
