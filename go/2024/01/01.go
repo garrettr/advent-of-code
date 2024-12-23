@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -66,9 +68,21 @@ func solve(left []int, right []int) (totalDistance int) {
 	for _, pair := range pairs {
 		totalDistance += abs(pair[0] - pair[1])
 	}
-	return totalDistance
+	return
 }
 
 func main() {
+	bytes, err := os.ReadFile("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fileText := string(bytes[:])
 
+	left, right, err := parseInput(fileText)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	solution := solve(left, right)
+	fmt.Println(solution)
 }
