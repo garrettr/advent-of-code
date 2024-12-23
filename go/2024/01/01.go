@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -39,6 +40,33 @@ func parseInput(input string) (left []int, right []int, err error) {
 	}
 
 	return
+}
+
+func zip[T any](a, b []T) [][2]T {
+	length := min(len(a), len(b))
+	result := make([][2]T, length)
+	for i := 0; i < length; i++ {
+		result[i] = [2]T{a[i], b[i]}
+	}
+	return result
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func solve(left []int, right []int) (totalDistance int) {
+	// Sort each slice
+	sort.Ints(left)
+	sort.Ints(right)
+	pairs := zip(left, right)
+	for _, pair := range pairs {
+		totalDistance += abs(pair[0] - pair[1])
+	}
+	return totalDistance
 }
 
 func main() {
