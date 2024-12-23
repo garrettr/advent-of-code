@@ -31,3 +31,32 @@ func TestParseInput(t *testing.T) {
 		t.Errorf("got parsed %v, want %v", parsed, wantParsed)
 	}
 }
+
+type solverTestCase struct {
+	name   string
+	solver func([][]int) int
+	input  string
+	want   int
+}
+
+func TestSolve(t *testing.T) {
+	input := getInput("input.txt")
+	testCases := []solverTestCase{
+		{"Part1_example", solvePart1, example, 2},
+		{"Part1_input", solvePart1, input, 660},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			parsed, err := parseInput(tc.input)
+			if err != nil {
+				t.Fatalf("parseInput got err %v, want nil", err)
+			}
+
+			solution := tc.solver(parsed)
+			if solution != tc.want {
+				t.Fatalf("got solution %v, want %v", solution, tc.want)
+			}
+		})
+	}
+}
