@@ -29,42 +29,53 @@ func TestParseInput(t *testing.T) {
 	}
 }
 
-func TestSolvePart1(t *testing.T) {
-	input := getInput("input.txt")
-	testCases := map[string]int{
-		example: 11,
-		input:   2000468,
-	}
-
-	for testCase, wantSolution := range testCases {
-		left, right, err := parseInput(testCase)
-		if err != nil {
-			t.Fatalf("got err %v, want nil", err)
-		}
-
-		solution := solvePart1(left, right)
-		if solution != wantSolution {
-			t.Fatalf("got solution %v, want %v", solution, wantSolution)
-		}
-	}
+type solverTestCase struct {
+	name   string
+	solver func([]int, []int) int
+	input  string
+	want   int
 }
 
-func TestSolvePart2(t *testing.T) {
+func TestSolve(t *testing.T) {
 	input := getInput("input.txt")
-	testCases := map[string]int{
-		example: 31,
-		input:   18567089,
+	testCases := []solverTestCase{
+		{
+			"Part1_example",
+			solvePart1,
+			example,
+			11,
+		},
+		{
+			"Part1_input",
+			solvePart1,
+			input,
+			2000468,
+		},
+		{
+			"Part2_example",
+			solvePart2,
+			example,
+			31,
+		},
+		{
+			"Part2_input",
+			solvePart2,
+			input,
+			18567089,
+		},
 	}
 
-	for testCase, wantSolution := range testCases {
-		left, right, err := parseInput(testCase)
-		if err != nil {
-			t.Fatalf("got err %v, want nil", err)
-		}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			left, right, err := parseInput(tc.input)
+			if err != nil {
+				t.Fatalf("parseInput got err %v, want nil", err)
+			}
 
-		solution := solvePart2(left, right)
-		if solution != wantSolution {
-			t.Fatalf("got solution %v, want %v", solution, wantSolution)
-		}
+			solution := tc.solver(left, right)
+			if solution != tc.want {
+				t.Fatalf("got solution %v, want %v", solution, tc.want)
+			}
+		})
 	}
 }
