@@ -22,10 +22,10 @@ func TestParseInput(t *testing.T) {
 		t.Errorf("got err %v, want nil", err)
 	}
 	if !reflect.DeepEqual(left, wantLeft) {
-		t.Errorf("got slice1 %v, want %v", left, wantLeft)
+		t.Errorf("got left %v, want %v", left, wantLeft)
 	}
 	if !reflect.DeepEqual(right, wantRight) {
-		t.Errorf("got slice2 %v, want %v", right, wantRight)
+		t.Errorf("got right %v, want %v", right, wantRight)
 	}
 }
 
