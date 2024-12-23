@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+func getInput(fname string) string {
+	bytes, err := os.ReadFile(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(bytes[:])
+}
+
 // parseInput takes a string of space-separated number pairs (one pair per line)
 // and returns two slices containing the left and right numbers respectively.
 // Each line must contain exactly two numbers.
@@ -72,13 +80,9 @@ func solvePart1(left []int, right []int) (totalDistance int) {
 }
 
 func main() {
-	bytes, err := os.ReadFile("input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fileText := string(bytes[:])
+	input := getInput("input.txt")
 
-	left, right, err := parseInput(fileText)
+	left, right, err := parseInput(input)
 	if err != nil {
 		log.Fatal(err)
 	}

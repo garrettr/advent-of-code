@@ -30,14 +30,21 @@ func TestParseInput(t *testing.T) {
 }
 
 func TestSolvePart1(t *testing.T) {
-	left, right, err := parseInput(example)
-	if err != nil {
-		t.Fatalf("got err %v, want nil", err)
+	input := getInput("input.txt")
+	testCases := map[string]int{
+		example: 11,
+		input:   2000468,
 	}
 
-	wantSolution := 11
-	solution := solvePart1(left, right)
-	if solution != wantSolution {
-		t.Fatalf("got solution %v, want %v", solution, wantSolution)
+	for testCase, wantSolution := range testCases {
+		left, right, err := parseInput(testCase)
+		if err != nil {
+			t.Fatalf("got err %v, want nil", err)
+		}
+
+		solution := solvePart1(left, right)
+		if solution != wantSolution {
+			t.Fatalf("got solution %v, want %v", solution, wantSolution)
+		}
 	}
 }
