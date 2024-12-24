@@ -54,20 +54,13 @@ func zip[T any](a, b []T) [][2]T {
 	return result
 }
 
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
 func solvePart1(left []int, right []int) (totalDistance int) {
 	// Sort each slice
 	sort.Ints(left)
 	sort.Ints(right)
 	pairs := zip(left, right)
 	for _, pair := range pairs {
-		totalDistance += abs(pair[0] - pair[1])
+		totalDistance += advent.Abs(pair[0] - pair[1])
 	}
 	return
 }

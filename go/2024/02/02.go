@@ -30,13 +30,6 @@ func parseInput(input string) ([][]int, error) {
 	return parsed, nil
 }
 
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
 const (
 	minValidDiff = 1
 	maxValidDiff = 3
@@ -51,7 +44,7 @@ func isValidDiff(diff int, trend int) bool {
 		return false
 	case diff > 0 && trend == decreasing:
 		return false
-	case abs(diff) < minValidDiff || abs(diff) > maxValidDiff:
+	case advent.Abs(diff) < minValidDiff || advent.Abs(diff) > maxValidDiff:
 		return false
 	}
 	return true

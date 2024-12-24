@@ -12,3 +12,10 @@ func GetInput(fname string) string {
 	}
 	return string(bytes[:])
 }
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
