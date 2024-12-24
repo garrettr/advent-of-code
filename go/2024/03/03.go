@@ -8,6 +8,11 @@ import (
 	"strconv"
 )
 
+var (
+	multiplyPattern  = regexp.MustCompile(`mul\(([0-9]{1,3}),([0-9]{1,3})\)`)
+	conditionPattern = regexp.MustCompile(`do(?:n't)?\(\)`)
+)
+
 func getInput(fname string) string {
 	bytes, err := os.ReadFile(fname)
 	if err != nil {
@@ -17,8 +22,7 @@ func getInput(fname string) string {
 }
 
 func solvePart1(input string) (result int) {
-	r := regexp.MustCompile(`mul\(([0-9]{1,3}),([0-9]{1,3})\)`)
-	matches := r.FindAllStringSubmatch(input, -1)
+	matches := multiplyPattern.FindAllStringSubmatch(input, -1)
 	for _, match := range matches {
 		x, _ := strconv.Atoi(match[1])
 		y, _ := strconv.Atoi(match[2])
@@ -28,11 +32,8 @@ func solvePart1(input string) (result int) {
 }
 
 func solvePart2(input string) (result int) {
-	mulRe := regexp.MustCompile(`mul\(([0-9]{1,3}),([0-9]{1,3})\)`)
-	condRe := regexp.MustCompile(`do(?:n't)?\(\)`)
-
-	muls := mulRe.FindAllStringSubmatchIndex(input, -1)
-	conds := condRe.FindAllStringSubmatchIndex(input, -1)
+	muls := multiplyPattern.FindAllStringSubmatchIndex(input, -1)
+	conds := conditionPattern.FindAllStringSubmatchIndex(input, -1)
 
 	isEnabled := true
 	condIndex := 0
