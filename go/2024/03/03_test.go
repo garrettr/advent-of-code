@@ -11,11 +11,11 @@ const example2 = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo(
 
 func TestSolve(t *testing.T) {
 	input := advent.GetInput("input.txt")
-	testCases := []advent.TestCase{
-		{Name: "Part1_example", Solver: solvePart1, Input: example, Want: 161},
-		{Name: "Part1_input", Solver: solvePart1, Input: input, Want: 184576302},
-		{Name: "Part2_example", Solver: solvePart2, Input: example2, Want: 48},
-		{Name: "Part2_input", Solver: solvePart2, Input: input, Want: 118173507},
+	testCases := map[string]advent.TestCase{
+		"Part1_example": {Solver: solvePart1, Input: example, Want: 161},
+		"Part1_input":   {Solver: solvePart1, Input: input, Want: 184576302},
+		"Part2_example": {Solver: solvePart2, Input: example2, Want: 48},
+		"Part2_input":   {Solver: solvePart2, Input: input, Want: 118173507},
 	}
 	advent.RunSolveTests(t, testCases)
 }
