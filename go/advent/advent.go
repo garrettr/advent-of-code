@@ -19,3 +19,12 @@ func Abs(x int) int {
 	}
 	return x
 }
+
+func Zip[T any](a, b []T) [][2]T {
+	length := min(len(a), len(b))
+	result := make([][2]T, length)
+	for i := 0; i < length; i++ {
+		result[i] = [2]T{a[i], b[i]}
+	}
+	return result
+}
