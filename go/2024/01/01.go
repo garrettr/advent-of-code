@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"example.com/advent"
+	"github.com/garrettr/advent-of-code/go/advent"
 )
 
 // parseInput takes a string of space-separated number pairs (one pair per line)

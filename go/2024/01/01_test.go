@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"example.com/advent"
+	"github.com/garrettr/advent-of-code/go/advent"
 )
 
 const example = `3   4
