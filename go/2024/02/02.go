@@ -3,19 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
-)
 
-func getInput(fname string) string {
-	bytes, err := os.ReadFile(fname)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(bytes[:])
-}
+	"github.com/garrettr/advent-of-code/go/advent"
+)
 
 // parseInput converts a string of space-separated numbers into a slice of integer slices.
 // Each line in the input becomes a slice of integers.
@@ -116,7 +109,7 @@ func solvePart2(input [][]int) (nSafeLevels int) {
 }
 
 func main() {
-	input := getInput("input.txt")
+	input := advent.GetInput("input.txt")
 
 	parsed, err := parseInput(input)
 	if err != nil {

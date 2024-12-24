@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/garrettr/advent-of-code/go/advent"
 )
 
 const example = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
@@ -15,7 +17,7 @@ type TestCase struct {
 }
 
 func TestSolve(t *testing.T) {
-	input := getInput("input.txt")
+	input := advent.GetInput("input.txt")
 	testCases := []TestCase{
 		{"Part1_example", solvePart1, example, 161},
 		{"Part1_input", solvePart1, input, 184576302},

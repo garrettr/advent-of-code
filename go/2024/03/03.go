@@ -3,23 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strconv"
+
+	"github.com/garrettr/advent-of-code/go/advent"
 )
 
 var (
 	multiplyPattern  = regexp.MustCompile(`mul\(([0-9]{1,3}),([0-9]{1,3})\)`)
 	conditionPattern = regexp.MustCompile(`do(?:n't)?\(\)`)
 )
-
-func getInput(fname string) string {
-	bytes, err := os.ReadFile(fname)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(bytes[:])
-}
 
 func solvePart1(input string) (result int) {
 	matches := multiplyPattern.FindAllStringSubmatch(input, -1)
@@ -63,7 +56,7 @@ func solvePart2(input string) (result int) {
 }
 
 func main() {
-	input := getInput("input.txt")
+	input := advent.GetInput("input.txt")
 
 	solution1 := solvePart1(input)
 	fmt.Println(solution1)
