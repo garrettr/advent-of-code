@@ -1,3 +1,3 @@
-module github.com/garrettr/advent-of-code/go/advent
+module example.com/advent
 
 go 1.23.4

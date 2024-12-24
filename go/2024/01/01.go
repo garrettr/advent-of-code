@@ -3,19 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
-)
 
-func getInput(fname string) string {
-	bytes, err := os.ReadFile(fname)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(bytes[:])
-}
+	"example.com/advent"
+)
 
 // parseInput takes a string of space-separated number pairs (one pair per line)
 // and returns two slices containing the left and right numbers respectively.
@@ -93,7 +86,7 @@ func solvePart2(left []int, right []int) (similarityScore int) {
 }
 
 func main() {
-	input := getInput("input.txt")
+	input := advent.GetInput("input.txt")
 
 	left, right, err := parseInput(input)
 	if err != nil {

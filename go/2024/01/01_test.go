@@ -3,6 +3,8 @@ package main
 import (
 	"reflect"
 	"testing"
+
+	"example.com/advent"
 )
 
 const example = `3   4
@@ -37,7 +39,7 @@ type solverTestCase struct {
 }
 
 func TestSolve(t *testing.T) {
-	input := getInput("input.txt")
+	input := advent.GetInput("input.txt")
 	testCases := []solverTestCase{
 		{
 			"Part1_example",
