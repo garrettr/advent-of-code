@@ -3,8 +3,6 @@ package main
 import (
 	"reflect"
 	"testing"
-
-	"github.com/garrettr/advent-of-code/go/advent"
 )
 
 const example = `7 6 4 2 1
@@ -34,8 +32,7 @@ func TestParseInput(t *testing.T) {
 	}
 }
 
-// TestCase represents a single test scenario for solving puzzle parts
-type TestCase struct {
+type solverTestCase struct {
 	name   string
 	solver func([][]int) int
 	input  string
@@ -43,12 +40,10 @@ type TestCase struct {
 }
 
 func TestSolve(t *testing.T) {
-	input := advent.GetInput("input.txt")
-	testCases := []TestCase{
+	input := getInput("input.txt")
+	testCases := []solverTestCase{
 		{"Part1_example", solvePart1, example, 2},
 		{"Part1_input", solvePart1, input, 660},
-		{"Part2_example", solvePart2, example, 4},
-		{"Part2_input", solvePart2, input, 689},
 	}
 
 	for _, tc := range testCases {

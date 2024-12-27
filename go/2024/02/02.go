@@ -3,15 +3,19 @@ package main
 import (
 	"fmt"
 	"log"
-	"slices"
+	"os"
 	"strconv"
 	"strings"
-
-	"github.com/garrettr/advent-of-code/go/advent"
 )
 
-// parseInput converts a string of space-separated numbers into a slice of integer slices.
-// Each line in the input becomes a slice of integers.
+func getInput(fname string) string {
+	bytes, err := os.ReadFile(fname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(bytes[:])
+}
+
 func parseInput(input string) ([][]int, error) {
 	lines := strings.Split(strings.TrimSpace(input), "\n")
 	parsed := make([][]int, len(lines))
@@ -30,71 +34,44 @@ func parseInput(input string) ([][]int, error) {
 	return parsed, nil
 }
 
-const (
-	minValidDiff = 1
-	maxValidDiff = 3
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
 
+const (
 	increasing = iota
 	decreasing
 )
 
-func isValidDiff(diff int, trend int) bool {
-	switch {
-	case diff < 0 && trend == increasing:
-		return false
-	case diff > 0 && trend == decreasing:
-		return false
-	case advent.Abs(diff) < minValidDiff || advent.Abs(diff) > maxValidDiff:
-		return false
-	}
-	return true
-}
-
-func isValidReport(report []int) bool {
-	if len(report) < 2 {
-		log.Fatalf("want report with len > 1, got %v", report)
-	}
-
-	trend := increasing
-	if report[0] > report[1] {
-		trend = decreasing
-	}
-
-	valid := true
-	for i := 1; i < len(report); i++ {
-		if !isValidDiff(report[i]-report[i-1], trend) {
-			valid = false
-			break
-		}
-	}
-
-	return valid
-}
-
-// solvePart1 counts the number of "safe" level sequences based on difference rules.
-// A sequence is safe if consecutive differences are between 1 and 3 (inclusive) and
-// maintain the same trend (increasing or decreasing) throughout.
 func solvePart1(input [][]int) (nSafeLevels int) {
 	for _, report := range input {
-		if isValidReport(report) {
-			nSafeLevels++
-		}
-	}
-	return
-}
-
-func solvePart2(input [][]int) (nSafeLevels int) {
-	for _, report := range input {
-		if isValidReport(report) {
-			nSafeLevels++
-			continue
+		trend := increasing
+		if report[0] > report[1] {
+			trend = decreasing
 		}
 
-		for i := 1; i <= len(report); i++ {
-			dampenedReport := slices.Concat(report[:i-1], report[i:])
-			if isValidReport(dampenedReport) {
-				nSafeLevels++
+		validDiff := func(diff int) bool {
+			if diff < 0 && trend == increasing {
+				return false
+			}
+			if diff > 0 && trend == decreasing {
+				return false
+			}
+			if abs(diff) < 1 || abs(diff) > 3 {
+				return false
+			}
+			return true
+		}
+
+		for i := range report[1:] {
+			if !validDiff(report[i+1] - report[i]) {
 				break
+			}
+			if i == len(report)-2 {
+				nSafeLevels++
 			}
 		}
 	}
@@ -102,7 +79,7 @@ func solvePart2(input [][]int) (nSafeLevels int) {
 }
 
 func main() {
-	input := advent.GetInput("input.txt")
+	input := getInput("input.txt")
 
 	parsed, err := parseInput(input)
 	if err != nil {
@@ -111,7 +88,4 @@ func main() {
 
 	solution1 := solvePart1(parsed)
 	fmt.Println(solution1)
-
-	solution2 := solvePart2(parsed)
-	fmt.Println(solution2)
 }
