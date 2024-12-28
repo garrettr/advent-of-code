@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/garrettr/advent-of-code/go/advent"
@@ -12,6 +13,7 @@ type Grid [][]rune
 
 const (
 	PatternXMAS = "XMAS"
+	PatternMAS  = "MAS"
 )
 
 var directions = [][2]int{
@@ -46,6 +48,33 @@ func isValidPattern(pattern string, grid *Grid, startX, startY int, dir [2]int) 
 	}
 
 	return string(candidate[:]) == pattern
+}
+
+func findPatterns2(grid *Grid, startX, startY int) int {
+	pattern := []rune(PatternMAS)
+	reversedPattern := []rune(PatternMAS)
+	slices.Reverse(reversedPattern)
+
+	diagonals := [][][2]int{
+		{{-1, -1}, {0, 0}, {1, 1}},
+		{{1, -1}, {0, 0}, {-1, 1}},
+	}
+
+	for _, diagonal := range diagonals {
+		candidate := make([]rune, len(pattern))
+		for i, point := range diagonal {
+			x, y := startX+point[0], startY+point[1]
+			if !(x >= 0 && x < len(*grid) && y >= 0 && y < len((*grid)[0])) {
+				break
+			}
+			candidate[i] = (*grid)[x][y]
+		}
+		if !(slices.Equal(candidate, pattern) || slices.Equal(candidate, reversedPattern)) {
+			return 0
+		}
+	}
+
+	return 1
 }
 
 func canFitPattern(pattern string, grid *Grid, startX, startY int, dir [2]int) bool {
@@ -89,9 +118,20 @@ func solvePart1(input string) (patternCount int) {
 	return
 }
 
-// func solvePart2(input string) (result int) {
-// 	return 0
-// }
+func solvePart2(input string) (patternCount int) {
+	grid, err := parseInput(input)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for x, row := range grid {
+		for y, elem := range row {
+			if elem == 'A' {
+				patternCount += findPatterns2(&grid, x, y)
+			}
+		}
+	}
+	return
+}
 
 func main() {
 	input := advent.GetInput("input.txt")
@@ -99,6 +139,6 @@ func main() {
 	solution1 := solvePart1(input)
 	fmt.Println(solution1)
 
-	// solution2 := solvePart2(input)
-	// fmt.Println(solution2)
+	solution2 := solvePart2(input)
+	fmt.Println(solution2)
 }

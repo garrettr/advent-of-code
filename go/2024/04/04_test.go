@@ -22,8 +22,8 @@ func TestSolve(t *testing.T) {
 	testCases := map[string]advent.TestCase{
 		"Part1_example": {Solver: solvePart1, Input: example, Want: 18},
 		"Part1_input":   {Solver: solvePart1, Input: input, Want: 2454},
-		// "Part2_example": {Solver: solvePart2, Input: example2, Want: 48},
-		// "Part2_input":   {Solver: solvePart2, Input: input, Want: 118173507},
+		"Part2_example": {Solver: solvePart2, Input: example, Want: 9},
+		"Part2_input":   {Solver: solvePart2, Input: input, Want: 1858},
 	}
 	advent.RunSolveTests(t, testCases)
 }
